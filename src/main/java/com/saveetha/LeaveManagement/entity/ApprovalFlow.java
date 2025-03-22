@@ -1,14 +1,10 @@
 package com.saveetha.LeaveManagement.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Entity
-@Getter
-@Setter
 @NoArgsConstructor
 @Table(name = "approval_flow") // Explicit table name
 public class ApprovalFlow {
@@ -17,26 +13,82 @@ public class ApprovalFlow {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer approvalFlowId;
 
-    @Column(nullable = false, length = 50)
-    private String name;
+    @Column(nullable = false, unique = true, length = 50)
+    private String name; // Approval flow name (e.g., "HR Approval Flow")
 
-    @ManyToOne
-    @JoinColumn(name = "final_approver")
+    @ManyToOne(fetch = FetchType.LAZY) // Lazy loading for better performance
+    @JoinColumn(name = "final_approver", nullable = false)
     private Employee finalApprover; // Final decision-maker (e.g., Principal)
 
-    private Timestamp createdAt;
-    private Timestamp updatedAt;
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Column(nullable = false)
+    private boolean active = true; // Default: Approval flow is active
+
 
     @PrePersist
     protected void onCreate() {
-        createdAt = new Timestamp(System.currentTimeMillis());
+        createdAt = LocalDateTime.now();
         updatedAt = createdAt;
     }
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = new Timestamp(System.currentTimeMillis());
+        updatedAt = LocalDateTime.now();
     }
-    @Column(nullable = false)
-    private boolean active = true; // Default: Approval flow  is active
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+
+
+    public Employee getFinalApprover() {
+        return finalApprover;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setFinalApprover(Employee finalApprover) {
+        this.finalApprover = finalApprover;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Integer getApprovalFlowId() {
+        return approvalFlowId;
+    }
+
+    public void setApprovalFlowId(Integer approvalFlowId) {
+        this.approvalFlowId = approvalFlowId;
+    }
+
 }

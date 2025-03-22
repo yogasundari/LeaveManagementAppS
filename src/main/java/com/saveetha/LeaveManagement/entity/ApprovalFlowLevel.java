@@ -4,43 +4,74 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import java.sql.Timestamp;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import java.time.LocalDateTime;
 
-@Entity
-@Getter
-@Setter
 @NoArgsConstructor
+@Entity
+@Setter
+@Getter
 @Table(name = "approval_flow_level")
 public class ApprovalFlowLevel {
 
+    @Setter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer flowLevelId;
 
-    @ManyToOne
-    @JoinColumn(name = "approval_flow_id", nullable = true)
+    @Setter
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "approval_flow_id", nullable = false)
     private ApprovalFlow approvalFlow;
 
+    @Setter
     @Column(nullable = false)
     private Integer sequence;
 
-    @ManyToOne
-    @JoinColumn(name = "approver_id")
-    private Employee approver; // Reference to Employee who is the approver
+    @Setter
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "approver_id", nullable = false)
+    private Employee approver;
 
-    private Timestamp createdAt;
-    private Timestamp updatedAt;
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = new Timestamp(System.currentTimeMillis());
-        updatedAt = createdAt;
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = new Timestamp(System.currentTimeMillis());
-    }
+    @UpdateTimestamp
     @Column(nullable = false)
-    private boolean active = true; // Default: ApprovalflowLevel  is active
+    private LocalDateTime updatedAt;
+
+    @Setter
+    @Column(nullable = false)
+    private boolean active = true;
+
+    // Getters and Setters
+    public Integer getFlowLevelId() {
+        return flowLevelId;
+    }
+
+    public ApprovalFlow getApprovalFlow() {
+        return approvalFlow;
+    }
+
+    public Integer getSequence() {
+        return sequence;
+    }
+
+    public Employee getApprover() {
+        return approver;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
 }
