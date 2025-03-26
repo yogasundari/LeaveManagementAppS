@@ -1,0 +1,54 @@
+api url
+register------->http://localhost:8080/auth/register
+        {
+           "empId":"TSAI001",
+           "email":"yoga@gmail.com",
+           "password":"Yazhu@07",
+           "role":"ADMIN"
+        }
+login-------->http://localhost:8080/auth/login
+    {
+       "email":"yoga@gmail.com",
+       "password":"Yazhu@07"
+    }
+createapprovalflow---------->http://localhost:8080/api/approval-flows/create
+    {
+           "name": "Scoft Office",
+           "finalApprover": {
+           "empId": "TSAI002"
+               },
+           "active": true
+    }
+createlevaeType----------->http://localhost:8080/api/leave-types/create
+   {
+            "typeName": "Sick Leave",
+            "maxAllowedPerYear": 12,
+            "maxAllowedPerMonth": 2,
+            "minAllowedDays": 1,
+            "academicYearStart": "2025-01-01",
+            "academicYearEnd": "2025-12-31",
+            "canBeCarriedForward": true,
+            "maxCarryForward": 5,
+            "active": true
+}
+createapprovalflow---------->http://localhost:8080/api/approval-flows/create
+    {
+           "name": "Scoft Office",
+           "finalApprover": {
+           "empId": "TSAI002"
+           },
+           "active":true
+
+}
+
+createApprovalFlowLevel----------->http://localhost:8080/api/approval-flow-levels
+{
+  "approvalFlow": {
+    "approvalFlowId": 1
+  },
+  "sequence": 4,
+  "approver": {
+    "empId": "TSAI007"
+  },
+  "active": true
+}
