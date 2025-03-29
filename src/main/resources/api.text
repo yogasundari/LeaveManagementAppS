@@ -52,3 +52,10 @@ createApprovalFlowLevel----------->http://localhost:8080/api/approval-flow-level
   },
   "active": true
 }
+update user profile -->http://localhost:8080/api/employees/update/{empId} // actual employee id
+{
+  "empName": "yogasundari",
+  "designation": "Professor",
+  "departmentId": 2,
+  "staffType": "TEACHING"
+}

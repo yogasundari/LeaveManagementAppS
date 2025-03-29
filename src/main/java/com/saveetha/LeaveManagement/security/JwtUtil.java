@@ -7,21 +7,25 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
 import java.util.Date;
 
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret}")  // Load from application.properties
-    private String SECRET_KEY;
+    private final String SECRET_KEY;
+
+    public JwtUtil(@Value("${jwt.secret}") String secretKey) {
+        this.SECRET_KEY = secretKey;
+    }
 
     private final long EXPIRATION_TIME = 86400000; // 1 day in milliseconds
 
     // Generate JWT Token with empId & role
     public String generateToken(String empId, String role) {
         return JWT.create()
-                .withSubject(empId) // Using empId as subject
-                .withClaim("role", role)  // Include role in JWT
+                .withSubject(empId)
+                .withClaim("role", role)
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .sign(Algorithm.HMAC256(SECRET_KEY));
@@ -43,7 +47,7 @@ public class JwtUtil {
         try {
             JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET_KEY)).build();
             DecodedJWT decodedJWT = verifier.verify(token);
-            return decodedJWT.getClaim("role").asString();  // Extract role
+            return decodedJWT.getClaim("role").asString();
         } catch (JWTVerificationException e) {
             throw new RuntimeException("Invalid or expired JWT token");
         }
@@ -59,6 +63,4 @@ public class JwtUtil {
             return false;
         }
     }
-
-
 }
