@@ -11,6 +11,6 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EmployeeLeaveBalanceId implements Serializable {
-    private String employee; // Matches emp_id
-    private Integer leaveType; // Matches leave_type_id
+    private String empId; // Matches emp_id
+    private Integer leaveTypeId; // Matches leave_type_id
 }

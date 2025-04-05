@@ -38,11 +38,17 @@ public class LeaveRequest {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String reason;
 
+    @Column(nullable = true)
     private LocalDate earnedDate;
+    @Column(nullable = true)
     private String classPeriod;
+    @Column(nullable = true)
     private LocalDate classDate;
+    @Column(nullable = true)
     private String subjectName;
+    @Column(nullable = true)
     private String subjectCode;
+    @Column(nullable = true)
     private String fileUpload;
 
     @Enumerated(EnumType.STRING)

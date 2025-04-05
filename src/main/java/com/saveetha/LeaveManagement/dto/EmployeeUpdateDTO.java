@@ -2,6 +2,8 @@ package com.saveetha.LeaveManagement.dto;
 
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,8 +35,18 @@ public class EmployeeUpdateDTO {
         this.staffType = staffType;
     }
 
+    public LocalDate getJoiningDate() {
+
+        return joiningDate;
+    }
+
+    public void setJoiningDate(LocalDate joiningDate) {
+        this.joiningDate = joiningDate;
+    }
+
     private String designation;
     private Long departmentId;
+    private LocalDate joiningDate;
 
     public String getEmpName() {
         return empName;

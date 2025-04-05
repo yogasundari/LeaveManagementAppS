@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 
 @Entity
 @NoArgsConstructor
@@ -51,6 +52,17 @@ public class Employee {
 
     @Column(nullable = false)
     private boolean active = true; // Default: Employee is active
+
+	public LocalDate getJoiningDate() {
+		return joiningDate;
+	}
+
+	public void setJoiningDate(LocalDate joiningDate) {
+		this.joiningDate = joiningDate;
+	}
+
+	@Column(nullable = true)
+	private LocalDate joiningDate;
 
     private Timestamp createdAt;
     private Timestamp updatedAt;

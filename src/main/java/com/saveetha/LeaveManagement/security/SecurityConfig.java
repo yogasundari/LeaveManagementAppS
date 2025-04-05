@@ -30,6 +30,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.DELETE, "/api/departments/delete/**").hasAuthority("ADMIN")
 
 						.requestMatchers(HttpMethod.POST, "/api/leave-types/**").permitAll()
+						.requestMatchers(HttpMethod.GET, "/api/leave-types/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/leave-types/create").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.PUT, "/api/leave-types/**").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.DELETE, "/api/leave-types/**").hasAuthority("ADMIN")
@@ -46,6 +47,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.PUT, "/api/employees/**").hasAnyAuthority("EMPLOYEE", "ADMIN")
 						.requestMatchers(HttpMethod.POST, "/api/leave").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/leave/apply").hasAnyAuthority("EMPLOYEE", "ADMIN")
+						.requestMatchers(HttpMethod.POST, "/leave-requests/**").permitAll()
 						.anyRequest().authenticated()
 				)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

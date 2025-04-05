@@ -24,7 +24,7 @@ public class LeaveType {
     @Column(nullable = false)
     private Integer maxAllowedPerYear;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Integer maxAllowedPerMonth;
 
     @Column(nullable = false)

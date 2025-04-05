@@ -1,13 +1,18 @@
 package com.saveetha.LeaveManagement.service;
 
+import com.saveetha.LeaveManagement.dto.LeaveAlterationDTO;
+import com.saveetha.LeaveManagement.entity.Employee;
 import com.saveetha.LeaveManagement.entity.LeaveAlteration;
+import com.saveetha.LeaveManagement.entity.LeaveRequest;
+import com.saveetha.LeaveManagement.enums.AlterationType;
 import com.saveetha.LeaveManagement.enums.NotificationStatus;
+import com.saveetha.LeaveManagement.repository.EmployeeRepository;
 import com.saveetha.LeaveManagement.repository.LeaveAlterationRepository;
-import jakarta.transaction.Transactional;
+import com.saveetha.LeaveManagement.repository.LeaveRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.time.LocalDateTime;
 
 @Service
 public class LeaveAlterationService {
@@ -15,25 +20,41 @@ public class LeaveAlterationService {
     @Autowired
     private LeaveAlterationRepository leaveAlterationRepository;
 
-    @Transactional
-    public LeaveAlteration requestAlteration(LeaveAlteration alteration) {
-        // Send Email/Notification Logic (Placeholder)
-        System.out.println("Sending email to replacement faculty: " + alteration.getReplacementEmployee().getEmpId());
+    @Autowired
+    private LeaveRequestRepository leaveRequestRepository;
 
-        alteration.setNotificationStatus(NotificationStatus.PENDING);
-        return leaveAlterationRepository.save(alteration);
+    @Autowired
+    private EmployeeRepository employeeRepository;
+    public boolean isAlterationCompleted(LeaveRequest leaveRequest) {
+        return leaveAlterationRepository.findByLeaveRequest(leaveRequest)
+                .map(alteration -> alteration.getNotificationStatus() == NotificationStatus.APPROVED)
+                .orElse(false);
     }
 
-    @Transactional
-    public LeaveAlteration approveAlteration(Integer alterationId) {
-        Optional<LeaveAlteration> optionalAlteration = leaveAlterationRepository.findById(alterationId);
+    public LeaveAlteration createLeaveAlteration(LeaveAlterationDTO alterationDTO) {
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(alterationDTO.getRequestId())
+                .orElseThrow(() -> new RuntimeException("Leave Request not found"));
 
-        if (optionalAlteration.isEmpty()) {
-            throw new IllegalArgumentException("Alteration request not found.");
+        Employee employee = employeeRepository.findById(alterationDTO.getEmpId())
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        LeaveAlteration alteration = new LeaveAlteration();
+        alteration.setLeaveRequest(leaveRequest);
+        alteration.setEmployee(employee);
+        alteration.setAlterationType(alterationDTO.getAlterationType());
+
+        if (alterationDTO.getAlterationType() == AlterationType.MOODLE_LINK) {
+            alteration.setMoodleActivityLink(alterationDTO.getMoodleActivityLink());
+        } else if (alterationDTO.getAlterationType() == AlterationType.STAFF_ALTERATION) {
+            Employee replacementEmployee = employeeRepository.findById(alterationDTO.getReplacementEmpId())
+                    .orElseThrow(() -> new RuntimeException("Replacement Employee not found"));
+            alteration.setReplacementEmployee(replacementEmployee);
         }
 
-        LeaveAlteration alteration = optionalAlteration.get();
-        alteration.setNotificationStatus(NotificationStatus.APPROVED);
+        alteration.setNotificationStatus(NotificationStatus.PENDING);
+        alteration.setActive(true);
+        alteration.setCreatedAt(LocalDateTime.now());
+        alteration.setUpdatedAt(LocalDateTime.now());
 
         return leaveAlterationRepository.save(alteration);
     }

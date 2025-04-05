@@ -14,12 +14,14 @@ public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
+    private final LeaveBalanceUtilService leaveBalanceUtilService ;
 
 
-    public EmployeeService(EmployeeRepository employeeRepository, DepartmentRepository departmentRepository) {
+    public EmployeeService(EmployeeRepository employeeRepository, DepartmentRepository departmentRepository,LeaveBalanceUtilService leaveBalanceUtilService) {
 
         this.departmentRepository = departmentRepository;
         this.employeeRepository = employeeRepository;
+        this.leaveBalanceUtilService = leaveBalanceUtilService;
     }
 
     public boolean updateEmployee(String empId, EmployeeUpdateDTO employeeUpdateDTO) {
@@ -27,6 +29,7 @@ public class EmployeeService {
 
         if (optionalEmployee.isPresent()) {
             Employee employee = optionalEmployee.get();
+            boolean isJoiningDateUpdated = employeeUpdateDTO.getJoiningDate() != null && employee.getJoiningDate() == null;
 
             // ✅ Update fields only if they are not null
             if (employeeUpdateDTO.getEmpName() != null) {
@@ -49,6 +52,16 @@ public class EmployeeService {
                     employee.setStaffType(staffType);
                 } catch (IllegalArgumentException e) {
                     throw new RuntimeException("Invalid staff type provided");
+                }
+
+                // ✅ If joining date is updated, initialize leave balance
+                if (isJoiningDateUpdated) {
+                    employee.setJoiningDate(employeeUpdateDTO.getJoiningDate());
+                    System.out.println("Initializing leave balance for Employee ID: " + empId);
+                    System.out.println("New Joining Date: " + employeeUpdateDTO.getJoiningDate());
+                    leaveBalanceUtilService.initializeLeaveBalance(employee);
+                    System.out.println("✅ Leave balance initialization function called!");
+
                 }
             }
 

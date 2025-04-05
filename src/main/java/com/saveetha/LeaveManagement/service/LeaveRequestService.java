@@ -1,13 +1,18 @@
 package com.saveetha.LeaveManagement.service;
 
-import com.saveetha.LeaveManagement.dto.LeaveRequestDto;
-import com.saveetha.LeaveManagement.entity.*;
+import com.saveetha.LeaveManagement.dto.LeaveRequestDTO;
+import com.saveetha.LeaveManagement.entity.Employee;
+import com.saveetha.LeaveManagement.entity.LeaveRequest;
+import com.saveetha.LeaveManagement.entity.LeaveType;
 import com.saveetha.LeaveManagement.enums.LeaveStatus;
-import com.saveetha.LeaveManagement.repository.*;
+import com.saveetha.LeaveManagement.repository.EmployeeRepository;
+import com.saveetha.LeaveManagement.repository.LeaveRequestRepository;
+import com.saveetha.LeaveManagement.repository.LeaveTypeRepository;
+import com.saveetha.LeaveManagement.service.LeaveAlterationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.time.temporal.ChronoUnit;
-import java.util.Optional;
+
+import java.time.LocalDateTime;
 
 @Service
 public class LeaveRequestService {
@@ -22,73 +27,42 @@ public class LeaveRequestService {
     private LeaveTypeRepository leaveTypeRepository;
 
     @Autowired
-    private EmployeeLeaveBalanceRepository employeeLeaveBalanceRepository;
+    private LeaveAlterationService leaveAlterationService; // ✅ Added missing service
 
-    public String applyForLeave(LeaveRequestDto leaveRequestDto) {
-        // 1️⃣ Find Employee & Leave Type
-        Employee employee = employeeRepository.findById(leaveRequestDto.getEmpId())
+    public LeaveRequest createLeaveRequest(LeaveRequestDTO leaveRequestDTO) {
+        Employee employee = employeeRepository.findById(leaveRequestDTO.getEmpId())
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
-        LeaveType leaveType = leaveTypeRepository.findById(leaveRequestDto.getLeaveTypeId())
-                .orElseThrow(() -> new RuntimeException("Leave type not found"));
 
-        // 2️⃣ Fetch Leave Balance
-        Optional<EmployeeLeaveBalance> leaveBalanceOpt = employeeLeaveBalanceRepository.findByEmployeeAndLeaveType(employee, leaveType);
-        if (leaveBalanceOpt.isEmpty()) {
-            return "No leave balance record found!";
-        }
-        EmployeeLeaveBalance leaveBalance = leaveBalanceOpt.get();
+        LeaveType leaveType = leaveTypeRepository.findById(leaveRequestDTO.getLeaveTypeId())
+                .orElseThrow(() -> new RuntimeException("Leave Type not found"));
 
-        // 3️⃣ Calculate Requested Days
-        int requestedDays = (int) ChronoUnit.DAYS.between(leaveRequestDto.getStartDate(), leaveRequestDto.getEndDate()) + 1;
-
-        // 4️⃣ Special Leave Type Conditions
-        if (leaveType.getTypeName().equalsIgnoreCase("Permission")) {
-            if (leaveRequestDto.getStartTime() == null || leaveRequestDto.getEndTime() == null) {
-                return "Start time and end time are required for Permission leave.";
-            }
-        }
-
-        if (leaveType.getTypeName().equalsIgnoreCase("Medical Leave")) {
-            if (leaveRequestDto.getFileUpload() == null || leaveRequestDto.getFileUpload().isEmpty()) {
-                return "Medical leave requires a file upload.";
-            }
-        }
-
-        if (leaveType.getTypeName().equalsIgnoreCase("Comp Off")) {
-            if (leaveRequestDto.getEarnedDate() == null) {
-                return "Comp Off leave requires an earned date.";
-            }
-        }
-
-        // 5️⃣ Check Leave Balance
-        if (leaveBalance.getBalanceLeave() < requestedDays) {
-            return "Insufficient leave balance!";
-        }
-
-        // 6️⃣ Deduct Leave Balance
-        leaveBalance.setBalanceLeave(leaveBalance.getBalanceLeave() - requestedDays);
-        leaveBalance.setUsedLeaves(leaveBalance.getUsedLeaves() + requestedDays);
-        employeeLeaveBalanceRepository.save(leaveBalance);
-
-        // 7️⃣ Save Leave Request
         LeaveRequest leaveRequest = new LeaveRequest();
         leaveRequest.setEmployee(employee);
         leaveRequest.setLeaveType(leaveType);
-        leaveRequest.setStartDate(leaveRequestDto.getStartDate());
-        leaveRequest.setEndDate(leaveRequestDto.getEndDate());
-        leaveRequest.setStartTime(leaveRequestDto.getStartTime());
-        leaveRequest.setEndTime(leaveRequestDto.getEndTime());
-        leaveRequest.setReason(leaveRequestDto.getReason());
-        leaveRequest.setEarnedDate(leaveRequestDto.getEarnedDate());
-        leaveRequest.setClassPeriod(leaveRequestDto.getClassPeriod());
-        leaveRequest.setClassDate(leaveRequestDto.getClassDate());
-        leaveRequest.setSubjectName(leaveRequestDto.getSubjectName());
-        leaveRequest.setSubjectCode(leaveRequestDto.getSubjectCode());
-        leaveRequest.setFileUpload(leaveRequestDto.getFileUpload());
+        leaveRequest.setStartDate(leaveRequestDTO.getStartDate());
+        leaveRequest.setEndDate(leaveRequestDTO.getEndDate());
+        leaveRequest.setStartTime(leaveRequestDTO.getStartTime());
+        leaveRequest.setEndTime(leaveRequestDTO.getEndTime());
+        leaveRequest.setReason(leaveRequestDTO.getReason());
+        leaveRequest.setEarnedDate(leaveRequestDTO.getEarnedDate());
+        leaveRequest.setClassPeriod(leaveRequestDTO.getClassPeriod());
+        leaveRequest.setClassDate(leaveRequestDTO.getClassDate());
+        leaveRequest.setSubjectName(leaveRequestDTO.getSubjectName());
+        leaveRequest.setSubjectCode(leaveRequestDTO.getSubjectCode());
+        leaveRequest.setFileUpload(leaveRequestDTO.getFileUpload());
         leaveRequest.setStatus(LeaveStatus.PENDING);
+        leaveRequest.setActive(true);
+        leaveRequest.setCreatedAt(LocalDateTime.now());
+        leaveRequest.setUpdatedAt(LocalDateTime.now());
 
-        leaveRequestRepository.save(leaveRequest);
+        // ✅ Validate Leave Alteration before submission
+        if (leaveRequestDTO.getClassPeriod() != null) {
+            boolean alterationCompleted = leaveAlterationService.isAlterationCompleted(leaveRequest);
+            if (!alterationCompleted) {
+                throw new RuntimeException("Leave alteration must be completed before submitting leave request.");
+            }
+        }
 
-        return "Leave request submitted successfully!";
+        return leaveRequestRepository.save(leaveRequest);
     }
 }

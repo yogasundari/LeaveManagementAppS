@@ -1,17 +1,18 @@
 package com.saveetha.LeaveManagement.dto;
 
-import com.saveetha.LeaveManagement.enums.LeaveStatus;
-import lombok.*;
-
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class LeaveRequestDto {
-    private String empId;
-    private Integer leaveTypeId;
+import com.saveetha.LeaveManagement.enums.LeaveStatus;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class LeaveRequestDTO {
+    private String empId; // Employee ID
+    private Integer leaveTypeId; // Leave Type ID
     private LocalDate startDate;
     private LocalDate endDate;
     private LocalTime startTime;
@@ -23,8 +24,10 @@ public class LeaveRequestDto {
     private String subjectName;
     private String subjectCode;
     private String fileUpload;
-    private LeaveStatus status = LeaveStatus.PENDING; // Default status
-
+    private LeaveStatus status = LeaveStatus.PENDING; // Default status: Pending
+    private Boolean active = true;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     public String getEmpId() {
         return empId;
     }
@@ -33,20 +36,20 @@ public class LeaveRequestDto {
         this.empId = empId;
     }
 
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
-    }
-
     public Integer getLeaveTypeId() {
         return leaveTypeId;
     }
 
     public void setLeaveTypeId(Integer leaveTypeId) {
         this.leaveTypeId = leaveTypeId;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
     }
 
     public LocalDate getEndDate() {
@@ -105,6 +108,14 @@ public class LeaveRequestDto {
         this.classDate = classDate;
     }
 
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
     public String getSubjectName() {
         return subjectName;
     }
@@ -135,5 +146,21 @@ public class LeaveRequestDto {
 
     public void setStatus(LeaveStatus status) {
         this.status = status;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

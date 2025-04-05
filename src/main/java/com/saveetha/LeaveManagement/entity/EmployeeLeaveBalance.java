@@ -16,12 +16,12 @@ public class EmployeeLeaveBalance {
     private EmployeeLeaveBalanceId id;
 
     @ManyToOne
-    @MapsId("employee") // Maps composite key to Employee
+    @MapsId("empId") // Maps composite key to Employee
     @JoinColumn(name = "emp_id", nullable = false)
     private Employee employee;
 
     @ManyToOne
-    @MapsId("leaveType") // Maps composite key to LeaveType
+    @MapsId("leaveTypeId") // Maps composite key to LeaveType
     @JoinColumn(name = "leave_type_id", nullable = false)
     private LeaveType leaveType;
 
@@ -45,6 +45,89 @@ public class EmployeeLeaveBalance {
         createdAt = LocalDateTime.now();
         updatedAt = createdAt;
     }
+
+    public int getCurrentYear() {
+        return currentYear;
+    }
+
+    public void setCurrentYear(int currentYear) {
+        this.currentYear = currentYear;
+    }
+
+    public Integer getBalanceLeave() {
+        return balanceLeave;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+    public void setBalanceLeave(Integer balanceLeave) {
+        this.balanceLeave = balanceLeave;
+    }
+
+    public Integer getCarryForwardLeave() {
+        return carryForwardLeave;
+    }
+
+    public void setCarryForwardLeave(Integer carryForwardLeave) {
+        this.carryForwardLeave = carryForwardLeave;
+    }
+
+    public EmployeeLeaveBalanceId getId() {
+        return id;
+    }
+
+    public LeaveType getLeaveType() {
+        return leaveType;
+    }
+
+    public Integer getUsedLeaves() {
+        return usedLeaves;
+    }
+
+    public void setUsedLeaves(Integer usedLeaves) {
+        this.usedLeaves = usedLeaves;
+    }
+
+    public void setLeaveType(LeaveType leaveType) {
+        this.leaveType = leaveType;
+    }
+
+    public Employee getEmployee() {
+        return employee;
+    }
+
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
+    }
+
+    public void setId(EmployeeLeaveBalanceId id) {
+        this.id = id;
+    }
+
+    @Column(nullable = false)
+    private int currentYear ;
 
     @PreUpdate
     protected void onUpdate() {

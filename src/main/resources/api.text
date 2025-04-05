@@ -59,3 +59,5 @@ update user profile -->http://localhost:8080/api/employees/update/{empId} // act
   "departmentId": 2,
   "staffType": "TEACHING"
 }
+
+// error in alteration functoin
