@@ -12,11 +12,16 @@ import org.springframework.web.bind.annotation.*;
 public class LeaveAlterationController {
 
     @Autowired
-    private LeaveAlterationService leaveAlterationService;
+    private LeaveAlterationService alterationService;
 
-    @PostMapping("/create")
-    public ResponseEntity<String> createLeaveAlteration(@RequestBody LeaveAlterationDTO alterationDTO) {
-        LeaveAlteration alteration = leaveAlterationService.createLeaveAlteration(alterationDTO);
-        return ResponseEntity.ok("Leave Alteration created successfully with ID: " + alteration.getAlterationId());
+    @PostMapping("/assign")
+    public ResponseEntity<LeaveAlteration> assignAlteration(@RequestBody LeaveAlterationDTO dto) {
+        return ResponseEntity.ok(alterationService.createAlteration(dto));
+    }
+
+    @PatchMapping("/approve/{id}")
+    public ResponseEntity<String> approve(@PathVariable Integer id) {
+        alterationService.approveAlteration(id);
+        return ResponseEntity.ok("Alteration Approved");
     }
 }

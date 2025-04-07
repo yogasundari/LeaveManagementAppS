@@ -8,7 +8,6 @@ import com.saveetha.LeaveManagement.enums.LeaveStatus;
 import com.saveetha.LeaveManagement.repository.EmployeeRepository;
 import com.saveetha.LeaveManagement.repository.LeaveRequestRepository;
 import com.saveetha.LeaveManagement.repository.LeaveTypeRepository;
-import com.saveetha.LeaveManagement.service.LeaveAlterationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +25,7 @@ public class LeaveRequestService {
     @Autowired
     private LeaveTypeRepository leaveTypeRepository;
 
+
     @Autowired
     private LeaveAlterationService leaveAlterationService; // ✅ Added missing service
 
@@ -35,6 +35,18 @@ public class LeaveRequestService {
 
         LeaveType leaveType = leaveTypeRepository.findById(leaveRequestDTO.getLeaveTypeId())
                 .orElseThrow(() -> new RuntimeException("Leave Type not found"));
+        if (leaveRequestDTO.getClassPeriod() != null) {
+            boolean alterationValid = leaveAlterationService.isAlterationCompleted(
+                    leaveRequestDTO.getEmpId(),
+                    leaveRequestDTO.getClassDate(), // This must be LocalDate
+                    leaveRequestDTO.getClassPeriod()
+            );
+
+            if (!alterationValid) {
+                throw new RuntimeException("Leave alteration is not completed. Either provide Moodle link or get staff approval.");
+            }
+        }
+
 
         LeaveRequest leaveRequest = new LeaveRequest();
         leaveRequest.setEmployee(employee);
@@ -55,13 +67,6 @@ public class LeaveRequestService {
         leaveRequest.setCreatedAt(LocalDateTime.now());
         leaveRequest.setUpdatedAt(LocalDateTime.now());
 
-        // ✅ Validate Leave Alteration before submission
-        if (leaveRequestDTO.getClassPeriod() != null) {
-            boolean alterationCompleted = leaveAlterationService.isAlterationCompleted(leaveRequest);
-            if (!alterationCompleted) {
-                throw new RuntimeException("Leave alteration must be completed before submitting leave request.");
-            }
-        }
 
         return leaveRequestRepository.save(leaveRequest);
     }

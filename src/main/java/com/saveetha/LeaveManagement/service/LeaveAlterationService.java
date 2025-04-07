@@ -12,50 +12,63 @@ import com.saveetha.LeaveManagement.repository.LeaveRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class LeaveAlterationService {
 
     @Autowired
-    private LeaveAlterationRepository leaveAlterationRepository;
+    private LeaveAlterationRepository alterationRepository;
 
     @Autowired
     private LeaveRequestRepository leaveRequestRepository;
 
     @Autowired
     private EmployeeRepository employeeRepository;
-    public boolean isAlterationCompleted(LeaveRequest leaveRequest) {
-        return leaveAlterationRepository.findByLeaveRequest(leaveRequest)
-                .map(alteration -> alteration.getNotificationStatus() == NotificationStatus.APPROVED)
-                .orElse(false);
-    }
 
-    public LeaveAlteration createLeaveAlteration(LeaveAlterationDTO alterationDTO) {
-        LeaveRequest leaveRequest = leaveRequestRepository.findById(alterationDTO.getRequestId())
-                .orElseThrow(() -> new RuntimeException("Leave Request not found"));
+    public LeaveAlteration createAlteration(LeaveAlterationDTO leaveAlterationDTO) {
+        LeaveRequest request = leaveRequestRepository.findById(leaveAlterationDTO.getRequestId())
+                .orElseThrow(() -> new RuntimeException("Leave request not found"));
 
-        Employee employee = employeeRepository.findById(alterationDTO.getEmpId())
+        Employee employee = employeeRepository.findById(leaveAlterationDTO.getEmpId())
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
         LeaveAlteration alteration = new LeaveAlteration();
-        alteration.setLeaveRequest(leaveRequest);
+        alteration.setLeaveRequest(request);
         alteration.setEmployee(employee);
-        alteration.setAlterationType(alterationDTO.getAlterationType());
+        alteration.setAlterationType(leaveAlterationDTO.getAlterationType());
 
-        if (alterationDTO.getAlterationType() == AlterationType.MOODLE_LINK) {
-            alteration.setMoodleActivityLink(alterationDTO.getMoodleActivityLink());
-        } else if (alterationDTO.getAlterationType() == AlterationType.STAFF_ALTERATION) {
-            Employee replacementEmployee = employeeRepository.findById(alterationDTO.getReplacementEmpId())
-                    .orElseThrow(() -> new RuntimeException("Replacement Employee not found"));
-            alteration.setReplacementEmployee(replacementEmployee);
+        if (leaveAlterationDTO.getAlterationType().name().equals("MOODLE_LINK")) {
+            alteration.setMoodleActivityLink(leaveAlterationDTO.getMoodleActivityLink());
+        } else if (leaveAlterationDTO.getAlterationType().name().equals("STAFF_ALTERATION")) {
+            Employee replacement = employeeRepository.findById(leaveAlterationDTO.getReplacementEmpId())
+                    .orElseThrow(() -> new RuntimeException("Replacement employee not found"));
+            alteration.setReplacementEmployee(replacement);
+            alteration.setNotificationStatus(NotificationStatus.PENDING);
         }
 
-        alteration.setNotificationStatus(NotificationStatus.PENDING);
-        alteration.setActive(true);
-        alteration.setCreatedAt(LocalDateTime.now());
-        alteration.setUpdatedAt(LocalDateTime.now());
+        return alterationRepository.save(alteration);
+    }
 
-        return leaveAlterationRepository.save(alteration);
+    public boolean isAlterationCompleted(String empId, LocalDate classDate, String classPeriod) {
+        List<LeaveAlteration> alterations = alterationRepository
+                .findByEmployeeEmpIdAndLeaveRequestClassDateAndLeaveRequestClassPeriod(empId, classDate, classPeriod);
+
+        if (alterations.isEmpty()) return false; // ✅ Don't allow leave if no alteration created
+
+        return alterations.stream().allMatch(alteration ->
+                (alteration.getAlterationType() == AlterationType.MOODLE_LINK && alteration.getMoodleActivityLink() != null)
+                        || (alteration.getAlterationType() == AlterationType.STAFF_ALTERATION
+                        && alteration.getNotificationStatus() == NotificationStatus.APPROVED));
+    }
+
+
+
+    public void approveAlteration(Integer alterationId) {
+        LeaveAlteration alteration = alterationRepository.findById(alterationId)
+                .orElseThrow(() -> new RuntimeException("Alteration not found"));
+        alteration.setNotificationStatus(NotificationStatus.APPROVED);
+        alterationRepository.save(alteration);
     }
 }

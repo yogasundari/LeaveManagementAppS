@@ -8,4 +8,3 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface EmployeeLeaveBalanceRepository extends JpaRepository<EmployeeLeaveBalance, EmployeeLeaveBalanceId> {
 }
-git add .
