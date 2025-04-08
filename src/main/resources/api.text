@@ -59,5 +59,39 @@ update user profile -->http://localhost:8080/api/employees/update/{empId} // act
   "departmentId": 2,
   "staffType": "TEACHING"
 }
-
-// error in alteration functoin
+Leave Request --->http://localhost:8080/api/leave-request/create-draft
+{
+  "empId": "TSAI001",
+  "leaveTypeId": 1,
+  "startDate": "2025-04-15",
+  "endDate": "2025-04-17",
+  "startTime": "09:00",
+  "endTime": "17:00",
+  "reason": "Personal work",
+  "earnedDate": null,
+  "fileUpload": null
+}
+leave Alteration-Moodel link --> http://localhost:8080/api/leave-alteration/assign
+{
+  "requestId": 1,
+  "empId": "TSAI001",
+  "alterationType": "MOODLE_LINK",
+  "moodleActivityLink": "https://moodle.saveetha.ac.in/class",
+  "classDate": "2025-04-09",
+  "classPeriod": "1st Hour",
+  "subjectName": "Mathematics",
+  "subjectCode": "MATH101"
+}
+leave alteration staff --> http://localhost:8080/api/leave-alteration/assign
+{
+  "requestId": 2,
+  "empId": "TSAI001",
+  "alterationType": "STAFF_ALTERATION",
+  "replacementEmpId": "TSAI002",
+  "classDate": "2025-04-09",
+  "classPeriod": "2nd Hour",
+  "subjectName": "Physics",
+  "subjectCode": "PHY102"
+}
+to approve the faculty --> http://localhost:8080/api/leave-alteration/approve/2
+Submit the request --> post -http://localhost:8080/api/leave-request/submit/2

@@ -47,7 +47,10 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.PUT, "/api/employees/**").hasAnyAuthority("EMPLOYEE", "ADMIN")
 						.requestMatchers(HttpMethod.POST, "/api/leave").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/leave/apply").hasAnyAuthority("EMPLOYEE", "ADMIN")
-						.requestMatchers(HttpMethod.POST, "/leave-requests/**").permitAll()
+						.requestMatchers(HttpMethod.POST, "/api/leave-request/**").permitAll()
+
+						.requestMatchers(HttpMethod.POST, "/api/leave-alteration/**").permitAll()
+						.requestMatchers(HttpMethod.PATCH, "/api/leave-alteration/**").permitAll()
 						.anyRequest().authenticated()
 				)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

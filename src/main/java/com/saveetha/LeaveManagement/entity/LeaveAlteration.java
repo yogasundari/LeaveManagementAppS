@@ -5,6 +5,7 @@ import com.saveetha.LeaveManagement.enums.NotificationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,7 +32,7 @@ public class LeaveAlteration {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AlterationType alterationType; // Enum for alteration type
-
+    @Column(nullable = true)
     private String moodleActivityLink;
 
     @ManyToOne
@@ -39,9 +40,16 @@ public class LeaveAlteration {
     private Employee replacementEmployee; // Foreign Key reference to replacement employee
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = true)
     private NotificationStatus notificationStatus = NotificationStatus.PENDING; // Default status: Pending
-
+    @Column(nullable = true)
+    private String classPeriod;
+    @Column(nullable = true)
+    private LocalDate classDate;
+    @Column(nullable = true)
+    private String subjectName;
+    @Column(nullable = true)
+    private String subjectCode;
     @Column(nullable = false)
     private Boolean active = true;
 

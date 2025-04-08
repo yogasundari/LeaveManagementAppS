@@ -2,72 +2,78 @@ package com.saveetha.LeaveManagement.service;
 
 import com.saveetha.LeaveManagement.dto.LeaveRequestDTO;
 import com.saveetha.LeaveManagement.entity.Employee;
+import com.saveetha.LeaveManagement.entity.LeaveAlteration;
 import com.saveetha.LeaveManagement.entity.LeaveRequest;
 import com.saveetha.LeaveManagement.entity.LeaveType;
+import com.saveetha.LeaveManagement.enums.AlterationType;
 import com.saveetha.LeaveManagement.enums.LeaveStatus;
+import com.saveetha.LeaveManagement.enums.NotificationStatus;
 import com.saveetha.LeaveManagement.repository.EmployeeRepository;
+import com.saveetha.LeaveManagement.repository.LeaveAlterationRepository;
 import com.saveetha.LeaveManagement.repository.LeaveRequestRepository;
 import com.saveetha.LeaveManagement.repository.LeaveTypeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class LeaveRequestService {
 
-    @Autowired
-    private LeaveRequestRepository leaveRequestRepository;
+    private final LeaveRequestRepository leaveRequestRepository;
+    private final EmployeeRepository employeeRepository;
+    private final LeaveTypeRepository leaveTypeRepository;
+    private final LeaveAlterationRepository leaveAlterationRepository;
 
-    @Autowired
-    private EmployeeRepository employeeRepository;
-
-    @Autowired
-    private LeaveTypeRepository leaveTypeRepository;
-
-
-    @Autowired
-    private LeaveAlterationService leaveAlterationService; // ✅ Added missing service
-
-    public LeaveRequest createLeaveRequest(LeaveRequestDTO leaveRequestDTO) {
-        Employee employee = employeeRepository.findById(leaveRequestDTO.getEmpId())
+    public LeaveRequest createDraftLeaveRequest(LeaveRequestDTO dto) {
+        Employee employee = employeeRepository.findByEmpId(dto.getEmpId())
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        LeaveType leaveType = leaveTypeRepository.findById(leaveRequestDTO.getLeaveTypeId())
-                .orElseThrow(() -> new RuntimeException("Leave Type not found"));
-        if (leaveRequestDTO.getClassPeriod() != null) {
-            boolean alterationValid = leaveAlterationService.isAlterationCompleted(
-                    leaveRequestDTO.getEmpId(),
-                    leaveRequestDTO.getClassDate(), // This must be LocalDate
-                    leaveRequestDTO.getClassPeriod()
-            );
-
-            if (!alterationValid) {
-                throw new RuntimeException("Leave alteration is not completed. Either provide Moodle link or get staff approval.");
-            }
-        }
-
+        LeaveType leaveType = leaveTypeRepository.findById(dto.getLeaveTypeId())
+                .orElseThrow(() -> new RuntimeException("LeaveType not found"));
 
         LeaveRequest leaveRequest = new LeaveRequest();
         leaveRequest.setEmployee(employee);
         leaveRequest.setLeaveType(leaveType);
-        leaveRequest.setStartDate(leaveRequestDTO.getStartDate());
-        leaveRequest.setEndDate(leaveRequestDTO.getEndDate());
-        leaveRequest.setStartTime(leaveRequestDTO.getStartTime());
-        leaveRequest.setEndTime(leaveRequestDTO.getEndTime());
-        leaveRequest.setReason(leaveRequestDTO.getReason());
-        leaveRequest.setEarnedDate(leaveRequestDTO.getEarnedDate());
-        leaveRequest.setClassPeriod(leaveRequestDTO.getClassPeriod());
-        leaveRequest.setClassDate(leaveRequestDTO.getClassDate());
-        leaveRequest.setSubjectName(leaveRequestDTO.getSubjectName());
-        leaveRequest.setSubjectCode(leaveRequestDTO.getSubjectCode());
-        leaveRequest.setFileUpload(leaveRequestDTO.getFileUpload());
-        leaveRequest.setStatus(LeaveStatus.PENDING);
-        leaveRequest.setActive(true);
-        leaveRequest.setCreatedAt(LocalDateTime.now());
-        leaveRequest.setUpdatedAt(LocalDateTime.now());
-
+        leaveRequest.setStartDate(dto.getStartDate());
+        leaveRequest.setEndDate(dto.getEndDate());
+        leaveRequest.setStartTime(dto.getStartTime());
+        leaveRequest.setEndTime(dto.getEndTime());
+        leaveRequest.setReason(dto.getReason());
+        leaveRequest.setEarnedDate(dto.getEarnedDate());
+        leaveRequest.setFileUpload(dto.getFileUpload());
+        leaveRequest.setStatus(LeaveStatus.DRAFT); // <-- Important for draft
 
         return leaveRequestRepository.save(leaveRequest);
     }
+    public String submitLeaveRequest(Integer requestId) {
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Leave Request not found"));
+
+        if (!leaveRequest.getStatus().equals(LeaveStatus.DRAFT)) {
+            throw new RuntimeException("Only DRAFT leave requests can be submitted");
+        }
+
+        // Get alterations linked to this leave request
+        List<LeaveAlteration> alterations = leaveAlterationRepository.findByLeaveRequest_RequestId(requestId);
+
+        boolean hasAlteration = !alterations.isEmpty();
+
+        if (hasAlteration) {
+            for (LeaveAlteration alt : alterations) {
+                if (alt.getAlterationType() == AlterationType.STAFF_ALTERATION) {
+                    if (alt.getNotificationStatus() != NotificationStatus.APPROVED) {
+                        throw new RuntimeException("All staff alterations must be approved before submission.");
+                    }
+                }
+            }
+        }
+
+        // If no alteration or all alterations are valid, proceed
+        leaveRequest.setStatus(LeaveStatus.PENDING);
+        leaveRequestRepository.save(leaveRequest);
+        return "Leave request submitted successfully!";
+    }
+
 }

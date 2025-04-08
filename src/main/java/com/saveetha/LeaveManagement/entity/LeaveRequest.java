@@ -40,14 +40,7 @@ public class LeaveRequest {
 
     @Column(nullable = true)
     private LocalDate earnedDate;
-    @Column(nullable = true)
-    private String classPeriod;
-    @Column(nullable = true)
-    private LocalDate classDate;
-    @Column(nullable = true)
-    private String subjectName;
-    @Column(nullable = true)
-    private String subjectCode;
+
     @Column(nullable = true)
     private String fileUpload;
 
@@ -144,37 +137,6 @@ public class LeaveRequest {
         this.earnedDate = earnedDate;
     }
 
-    public String getClassPeriod() {
-        return classPeriod;
-    }
-
-    public void setClassPeriod(String classPeriod) {
-        this.classPeriod = classPeriod;
-    }
-
-    public LocalDate getClassDate() {
-        return classDate;
-    }
-
-    public void setClassDate(LocalDate classDate) {
-        this.classDate = classDate;
-    }
-
-    public String getSubjectName() {
-        return subjectName;
-    }
-
-    public void setSubjectName(String subjectName) {
-        this.subjectName = subjectName;
-    }
-
-    public String getSubjectCode() {
-        return subjectCode;
-    }
-
-    public void setSubjectCode(String subjectCode) {
-        this.subjectCode = subjectCode;
-    }
 
     public String getFileUpload() {
         return fileUpload;
