@@ -24,5 +24,11 @@ public class LeaveRequestController {
         String response = leaveRequestService.submitLeaveRequest(requestId);
         return ResponseEntity.ok(response);
     }
+    // PATCH endpoint to withdraw a leave request
+    @PatchMapping("/withdraw/{requestId}")
+    public ResponseEntity<String> withdrawLeaveRequest(@PathVariable Integer requestId) {
+        String response = leaveRequestService.withdrawLeaveRequest(requestId);
+        return ResponseEntity.ok(response);
+    }
 
 }

@@ -31,7 +31,7 @@ public class LeaveApproval {
     @JoinColumn(name = "approver_id", nullable = false)
     private Employee approver; // Foreign Key reference to Employee (approver)
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT" ,nullable = true)
     private String reason; // Optional approval/rejection reason
 
     @Enumerated(EnumType.STRING)
@@ -53,5 +53,77 @@ public class LeaveApproval {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public Integer getApprovalId() {
+        return approvalId;
+    }
+
+    public void setApprovalId(Integer approvalId) {
+        this.approvalId = approvalId;
+    }
+
+    public LeaveRequest getLeaveRequest() {
+        return leaveRequest;
+    }
+
+    public void setLeaveRequest(LeaveRequest leaveRequest) {
+        this.leaveRequest = leaveRequest;
+    }
+
+    public ApprovalFlowLevel getApprovalFlowLevel() {
+        return approvalFlowLevel;
+    }
+
+    public void setApprovalFlowLevel(ApprovalFlowLevel approvalFlowLevel) {
+        this.approvalFlowLevel = approvalFlowLevel;
+    }
+
+    public Employee getApprover() {
+        return approver;
+    }
+
+    public void setApprover(Employee approver) {
+        this.approver = approver;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+
+    public ApprovalStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ApprovalStatus status) {
+        this.status = status;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

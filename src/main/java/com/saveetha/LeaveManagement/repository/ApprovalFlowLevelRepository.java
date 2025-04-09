@@ -8,4 +8,6 @@ import java.util.List;
 @Repository
 public interface ApprovalFlowLevelRepository extends JpaRepository<ApprovalFlowLevel, Integer> {
     List<ApprovalFlowLevel> findByApprovalFlowApprovalFlowId(Integer approvalFlowId);
+    List<ApprovalFlowLevel> findByApprovalFlow_ApprovalFlowIdOrderBySequenceAsc(Integer approvalFlowId);
+
 }

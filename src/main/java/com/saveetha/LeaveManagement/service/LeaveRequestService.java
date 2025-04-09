@@ -25,6 +25,7 @@ public class LeaveRequestService {
     private final EmployeeRepository employeeRepository;
     private final LeaveTypeRepository leaveTypeRepository;
     private final LeaveAlterationRepository leaveAlterationRepository;
+    private final LeaveApprovalService leaveApprovalService;
 
     public LeaveRequest createDraftLeaveRequest(LeaveRequestDTO dto) {
         Employee employee = employeeRepository.findByEmpId(dto.getEmpId())
@@ -73,7 +74,20 @@ public class LeaveRequestService {
         // If no alteration or all alterations are valid, proceed
         leaveRequest.setStatus(LeaveStatus.PENDING);
         leaveRequestRepository.save(leaveRequest);
+        leaveApprovalService.initiateApprovalFlow(requestId);
         return "Leave request submitted successfully!";
+    }
+    public String withdrawLeaveRequest(Integer requestId) {
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Leave request not found"));
+
+        if (leaveRequest.getStatus() == LeaveStatus.PENDING || leaveRequest.getStatus() == LeaveStatus.APPROVED) {
+            leaveRequest.setStatus(LeaveStatus.WITHDRAWN);
+            leaveRequestRepository.save(leaveRequest);
+            return "Leave request withdrawn successfully.";
+        } else {
+            throw new RuntimeException("Only PENDING or APPROVED leave requests can be withdrawn.");
+        }
     }
 
 }

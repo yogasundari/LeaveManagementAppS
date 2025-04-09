@@ -35,10 +35,12 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.PUT, "/api/leave-types/**").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.DELETE, "/api/leave-types/**").hasAuthority("ADMIN")
 
+						.requestMatchers(HttpMethod.POST, "/api/approval-flows/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/approval-flows/create").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.PUT, "/api/approval-flows/**").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.DELETE, "/api/approval-flows/**").hasAuthority("ADMIN")
 
+						.requestMatchers(HttpMethod.POST, "/api/approval-flow-levels/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/approval-flow-levels/create").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.PUT, "/api/approval-flow-levels/**").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.DELETE, "/api/approval-flow-levels/**").hasAuthority("ADMIN")
@@ -48,9 +50,11 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.POST, "/api/leave").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/leave/apply").hasAnyAuthority("EMPLOYEE", "ADMIN")
 						.requestMatchers(HttpMethod.POST, "/api/leave-request/**").permitAll()
+						.requestMatchers(HttpMethod.PATCH, "/api/leave-request/**").permitAll()
 
 						.requestMatchers(HttpMethod.POST, "/api/leave-alteration/**").permitAll()
 						.requestMatchers(HttpMethod.PATCH, "/api/leave-alteration/**").permitAll()
+						.requestMatchers(HttpMethod.PATCH, "/api/leave-approval/**").permitAll()
 						.anyRequest().authenticated()
 				)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
