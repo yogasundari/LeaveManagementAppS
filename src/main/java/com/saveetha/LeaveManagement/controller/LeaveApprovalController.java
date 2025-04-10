@@ -1,5 +1,6 @@
 package com.saveetha.LeaveManagement.controller;
 
+import com.saveetha.LeaveManagement.dto.ApprovalRequestDTO;
 import com.saveetha.LeaveManagement.enums.ApprovalStatus;
 import com.saveetha.LeaveManagement.service.LeaveApprovalService;
 import lombok.RequiredArgsConstructor;
@@ -24,10 +25,10 @@ public class LeaveApprovalController {
     @PatchMapping("/process/{approvalId}")
     public ResponseEntity<String> processApproval(
             @PathVariable Integer approvalId,
-            @RequestParam ApprovalStatus status,
-            @RequestParam(required = false) String reason
+            @RequestBody ApprovalRequestDTO approvalRequestDTOdto
     ) {
-        leaveApprovalService.processApproval(approvalId, status, reason);
-        return ResponseEntity.ok("Approval processed: " + status);
+        String result =leaveApprovalService.processApproval(approvalId, approvalRequestDTOdto.getStatus(), approvalRequestDTOdto.getReason());
+
+        return ResponseEntity.ok(result);
     }
 }

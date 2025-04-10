@@ -23,29 +23,36 @@ public class LeaveApprovalService {
     private final ApprovalFlowLevelRepository approvalFlowLevelRepository;
     private final LeaveRequestRepository leaveRequestRepository;
 
-    public void initiateApprovalFlow(Integer requestId) {
-        LeaveRequest leaveRequest = leaveRequestRepository.findById(requestId)
+    public void initiateApprovalFlow(Integer leaveRequestId) {
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
                 .orElseThrow(() -> new RuntimeException("LeaveRequest not found"));
 
         Employee employee = leaveRequest.getEmployee();
-        ApprovalFlow approvalFlow = employee.getApprovalFlow();
+        Integer approvalFlowId = employee.getApprovalFlow().getApprovalFlowId();
 
+        // 👇 Get the sequence of approvers for this flow
         List<ApprovalFlowLevel> flowLevels = approvalFlowLevelRepository
-                .findByApprovalFlow_ApprovalFlowIdOrderBySequenceAsc(approvalFlow.getApprovalFlowId());
+                .findByApprovalFlow_ApprovalFlowIdOrderBySequenceAsc(approvalFlowId);
+        System.out.println("Initiating approval flow for Leave Request ID: " + leaveRequestId);
+        System.out.println("Approval Flow ID: " + approvalFlowId);
+        System.out.println("Approvers in flow:");
 
         for (ApprovalFlowLevel level : flowLevels) {
+            System.out.println(" - Approver: " + level.getApprover().getEmpId() +
+                    ", Sequence: " + level.getSequence());
             LeaveApproval approval = new LeaveApproval();
             approval.setLeaveRequest(leaveRequest);
-            approval.setApprovalFlowLevel(level);
-            approval.setApprover(level.getApprover());
-            approval.setStatus(ApprovalStatus.PENDING);
-            leaveApprovalRepository.save(approval);
+            approval.setApprovalFlowLevel(level);   // Which level of approval
+            approval.setApprover(level.getApprover());  // Who is the approver
+            approval.setStatus(ApprovalStatus.PENDING); // Initially pending
+            leaveApprovalRepository.save(approval); //  This creates one row per level
         }
+        System.out.println("Approval flow entries created for leave request.");
     }
 
 
     @Transactional
-    public void processApproval(Integer approvalId, ApprovalStatus status, String reason) {
+    public String processApproval(Integer approvalId, ApprovalStatus status, String reason) {
         LeaveApproval approval = leaveApprovalRepository.findById(approvalId)
                 .orElseThrow(() -> new RuntimeException("Approval not found"));
 
@@ -62,7 +69,7 @@ public class LeaveApprovalService {
         if (status == ApprovalStatus.REJECTED) {
             request.setStatus(LeaveStatus.REJECTED);
             leaveRequestRepository.save(request);
-            return;
+            return "Leave request rejected by " + approval.getApprover().getEmpId();
         }
 
         // If approved, check if current approver is final approver
@@ -72,7 +79,6 @@ public class LeaveApprovalService {
                 .allMatch(a -> a.getStatus() == ApprovalStatus.APPROVED);
 
         if (allApproved) {
-            // 1. Get the last ApprovalFlowLevel (highest sequence)
             int maxSequence = approvals.stream()
                     .mapToInt(a -> a.getApprovalFlowLevel().getSequence())
                     .max().orElse(0);
@@ -85,13 +91,15 @@ public class LeaveApprovalService {
             if (finalApproval != null) {
                 Employee expectedFinalApprover = request.getEmployee().getApprovalFlow().getFinalApprover();
 
-                // 2. Check if the current approval is done by final approver
                 if (finalApproval.getApprover().getEmpId().equals(expectedFinalApprover.getEmpId())) {
                     request.setStatus(LeaveStatus.APPROVED);
                     leaveRequestRepository.save(request);
+                    return "Leave request approved by final approver";
                 }
             }
         }
+
+        return "Leave approved at current level and pending further approval";
     }
 
 

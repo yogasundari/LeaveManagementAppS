@@ -15,8 +15,8 @@ public class LeaveRequestController {
     private final LeaveRequestService leaveRequestService;
 
     @PostMapping("/create-draft")
-    public ResponseEntity<?> createDraft(@RequestBody LeaveRequestDTO dto) {
-        LeaveRequest saved = leaveRequestService.createDraftLeaveRequest(dto);
+    public ResponseEntity<?> createDraft(@RequestBody LeaveRequestDTO leaveRequestdto) {
+        LeaveRequest saved = leaveRequestService.createDraftLeaveRequest(leaveRequestdto);
         return ResponseEntity.ok("Draft Leave Request created with ID: " + saved.getRequestId());
     }
     @PostMapping("/submit/{id}")

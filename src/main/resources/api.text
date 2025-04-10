@@ -59,6 +59,14 @@ update user profile -->http://localhost:8080/api/employees/update/{empId} // act
   "departmentId": 2,
   "staffType": "TEACHING"
 }
+{
+  "empName": "IT-HOD",
+  "designation": "HOD",
+  "departmentId": 2,
+  "staffType": "TEACHING",
+  "profilePicture":"image.png",
+  "approvalFlow":1
+}
 Leave Request --->http://localhost:8080/api/leave-request/create-draft
 {
   "empId": "TSAI001",
