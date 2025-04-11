@@ -67,7 +67,7 @@ update user profile -->http://localhost:8080/api/employees/update/{empId} // act
   "profilePicture":"image.png",
   "approvalFlow":1
 }
-Leave Request --->http://localhost:8080/api/leave-request/create-draft
+Leave Request --->http://localhost:8080/api/leave-request/create
 {
   "empId": "TSAI001",
   "leaveTypeId": 1,
@@ -104,3 +104,9 @@ leave alteration staff --> http://localhost:8080/api/leave-alteration/assign
 to approve the faculty --> http://localhost:8080/api/leave-alteration/approve/2
 Submit the request --> post -http://localhost:8080/api/leave-request/submit/2
 to widhdraw the request --> patch ->http://localhost:8080/api/leave-request/withdraw/1
+
+to approve the approver --> patch--->http://localhost:8080/api/leave-approval/process/3
+{
+  "status": "APPROVED",
+  "reason": "Looks good."
+}

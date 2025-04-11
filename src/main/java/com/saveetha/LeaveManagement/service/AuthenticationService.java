@@ -27,6 +27,9 @@ public class AuthenticationService {
         if (employeeRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists!");
         }
+        if (employeeRepository.existsByEmpId(request.getEmpId())) {
+            throw new RuntimeException("Employee ID already exists!");
+        }
 
         // Create Employee entity
         Employee employee = new Employee();
