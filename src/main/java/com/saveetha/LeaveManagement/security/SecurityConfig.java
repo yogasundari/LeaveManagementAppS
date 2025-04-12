@@ -46,6 +46,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.DELETE, "/api/approval-flow-levels/**").hasAuthority("ADMIN")
 
 						.requestMatchers(HttpMethod.PUT, "/api/employees/**").permitAll()
+						.requestMatchers(HttpMethod.GET, "/api/employees/**").permitAll()
 						.requestMatchers(HttpMethod.PUT, "/api/employees/**").hasAnyAuthority("EMPLOYEE", "ADMIN")
 						.requestMatchers(HttpMethod.POST, "/api/leave").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/leave/apply").hasAnyAuthority("EMPLOYEE", "ADMIN")
