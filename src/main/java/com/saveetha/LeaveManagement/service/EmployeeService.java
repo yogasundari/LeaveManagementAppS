@@ -86,10 +86,45 @@ public class EmployeeService {
 
         return false;
     }
+
     public List<Employee> getAllEmployees() {
         return employeeRepository.findAll();
     }
+
     public Optional<Employee> getEmployeeById(String empId) {
         return employeeRepository.findByEmpId(empId);
+    }
+
+    // ✅ Soft delete (set active = false)
+    public boolean deactivateEmployee(String empId) {
+        Optional<Employee> optionalEmployee = employeeRepository.findByEmpId(empId);
+        if (optionalEmployee.isPresent()) {
+            Employee employee = optionalEmployee.get();
+            employee.setActive(false);
+            employeeRepository.save(employee);
+            return true;
+        }
+        return false;
+    }
+
+    // ✅ Reactivate (set active = true)
+    public boolean activateEmployee(String empId) {
+        Optional<Employee> optionalEmployee = employeeRepository.findByEmpId(empId);
+        if (optionalEmployee.isPresent()) {
+            Employee employee = optionalEmployee.get();
+            employee.setActive(true);
+            employeeRepository.save(employee);
+            return true;
+        }
+        return false;
+    }
+    // ✅ Optional: Hard delete (not recommended)
+    public boolean deleteEmployee(String empId) {
+        Optional<Employee> optionalEmployee = employeeRepository.findByEmpId(empId);
+        if (optionalEmployee.isPresent()) {
+            employeeRepository.delete(optionalEmployee.get());
+            return true;
+        }
+        return false;
     }
 }

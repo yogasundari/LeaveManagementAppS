@@ -47,4 +47,25 @@ public class EmployeeController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+    // ✅ Soft delete - deactivate employee
+    @PatchMapping("/deactivate/{empId}")
+    public ResponseEntity<String> deactivateEmployee(@PathVariable String empId) {
+        boolean result = employeeService.deactivateEmployee(empId);
+        return result ? ResponseEntity.ok("Employee deactivated successfully")
+                : ResponseEntity.notFound().build();
+    }
+
+    // ✅ Reactivate employee
+    @PatchMapping("/activate/{empId}")
+    public ResponseEntity<String> activateEmployee(@PathVariable String empId) {
+        boolean result = employeeService.activateEmployee(empId);
+        return result ? ResponseEntity.ok("Employee activated successfully")
+                : ResponseEntity.notFound().build();
+    }
+    @DeleteMapping("/{empId}")
+    public ResponseEntity<String> deleteEmployee(@PathVariable String empId) {
+        boolean result = employeeService.deleteEmployee(empId);
+        return result ? ResponseEntity.ok("Employee deleted successfully")
+                : ResponseEntity.notFound().build();
+    }
 }

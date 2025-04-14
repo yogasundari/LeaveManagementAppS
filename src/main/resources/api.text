@@ -1,16 +1,44 @@
 api url
-register------->http://localhost:8080/auth/register
+
+Authentication:
+register------->POST--->http://localhost:8080/auth/register
         {
            "empId":"TSAI001",
            "email":"yoga@gmail.com",
            "password":"Yazhu@07",
            "role":"ADMIN"
         }
-login-------->http://localhost:8080/auth/login
+login-------->POST---->http://localhost:8080/auth/login
     {
        "email":"yoga@gmail.com",
        "password":"Yazhu@07"
     }
+
+
+Update-Profile:
+
+update user profile -->PUT------>http://localhost:8080/api/employees/update/{empId} // actual employee id
+{
+  "empName": "yogasundari",
+  "designation": "Professor",
+  "departmentId": 2,
+  "staffType": "TEACHING"
+}
+{
+  "empName": "IT-HOD",
+  "designation": "HOD",
+  "departmentId": 2,
+  "staffType": "TEACHING",
+  "profilePicture":"image.png",
+  "approvalFlow":1
+}
+get All employees with active and inactive --->GET---->http://localhost:8080/api/employees
+get particular employee by id--->GET------>http://localhost:8080/api/employees/{empId}
+Soft delete (inactive)---->PATCH---->http://localhost:8080/api/employees/deactivate/{id}
+Reactivate employee----->PATCH---->http://localhost:8080/api/employees/activate/{id}
+Permanently delete---->DELETE---->http://localhost:8080/api/employees/{id}
+
+
 createapprovalflow---------->http://localhost:8080/api/approval-flows/create
     {
            "name": "Scoft Office",
