@@ -49,14 +49,14 @@ createapprovalflow---------->http://localhost:8080/api/approval-flows/create
     }
 createlevaeType----------->http://localhost:8080/api/leave-types/create
    {
-            "typeName": "Sick Leave",
+            "typeName": "CL",
             "maxAllowedPerYear": 12,
             "maxAllowedPerMonth": 2,
             "minAllowedDays": 1,
             "academicYearStart": "2025-01-01",
             "academicYearEnd": "2025-12-31",
             "canBeCarriedForward": true,
-            "maxCarryForward": 5,
+            "maxCarryForward":11,
             "active": true
 }
 createapprovalflow---------->http://localhost:8080/api/approval-flows/create

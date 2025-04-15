@@ -24,7 +24,7 @@ public class LeaveType {
     @Column(nullable = true)
     private Integer maxAllowedPerMonth;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Integer minAllowedDays;
 
     private LocalDate academicYearStart;
@@ -148,3 +148,4 @@ public class LeaveType {
     }
 
 }
+//without authorization

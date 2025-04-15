@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 @Table(name = "EmployeeLeaveBalance")
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class EmployeeLeaveBalance {
 
     @EmbeddedId
@@ -26,111 +26,40 @@ public class EmployeeLeaveBalance {
     private LeaveType leaveType;
 
     @Column(nullable = false)
-    private Integer usedLeaves = 0;
+    private Double usedLeaves =0.0;
 
     @Column(nullable = false)
-    private Integer balanceLeave = 0;
+    private Double balanceLeave =0.0;
 
     @Column(nullable = false)
-    private Integer carryForwardLeave = 0;
+    private Double carryForwardLeave=0.0;
 
     @Column(nullable = false)
     private Boolean active = true;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    @Column(nullable = false)
+    private String currentYear ;
 
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = createdAt;
     }
-
-    public int getCurrentYear() {
-        return currentYear;
-    }
-
-    public void setCurrentYear(int currentYear) {
-        this.currentYear = currentYear;
-    }
-
-    public Integer getBalanceLeave() {
-        return balanceLeave;
-    }
-
-    public Boolean getActive() {
-        return active;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public void setActive(Boolean active) {
-        this.active = active;
-    }
-
-    public void setBalanceLeave(Integer balanceLeave) {
-        this.balanceLeave = balanceLeave;
-    }
-
-    public Integer getCarryForwardLeave() {
-        return carryForwardLeave;
-    }
-
-    public void setCarryForwardLeave(Integer carryForwardLeave) {
-        this.carryForwardLeave = carryForwardLeave;
-    }
-
-    public EmployeeLeaveBalanceId getId() {
-        return id;
-    }
-
-    public LeaveType getLeaveType() {
-        return leaveType;
-    }
-
-    public Integer getUsedLeaves() {
-        return usedLeaves;
-    }
-
-    public void setUsedLeaves(Integer usedLeaves) {
-        this.usedLeaves = usedLeaves;
-    }
-
-    public void setLeaveType(LeaveType leaveType) {
-        this.leaveType = leaveType;
-    }
-
-    public Employee getEmployee() {
-        return employee;
-    }
-
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
-    }
-
-    public void setId(EmployeeLeaveBalanceId id) {
-        this.id = id;
-    }
-
-    @Column(nullable = false)
-    private int currentYear ;
-
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+    // Default constructor (needed by JPA)
+    public EmployeeLeaveBalance(Employee employee, LeaveType leaveType, String currentYear, Double proratedLeave) {
+        this.employee = employee;
+        this.leaveType = leaveType;
+        this.currentYear = currentYear;
+        this.balanceLeave = proratedLeave;
+        this.usedLeaves = 0.0;
+        this.carryForwardLeave = 0.0;
+        this.id = new EmployeeLeaveBalanceId(employee.getEmpId(), leaveType.getLeaveTypeId());
+    }
+
 }

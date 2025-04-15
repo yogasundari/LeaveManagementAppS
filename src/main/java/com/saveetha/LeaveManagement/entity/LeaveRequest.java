@@ -1,11 +1,13 @@
 package com.saveetha.LeaveManagement.entity;
 
+import com.saveetha.LeaveManagement.enums.LeaveDuration;
 import com.saveetha.LeaveManagement.enums.LeaveStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 
 @Entity
 @Table(name = "LeaveRequest")
@@ -32,6 +34,14 @@ public class LeaveRequest {
     @Column(nullable = false)
     private LocalDate endDate;
 
+
+    @Getter
+    @Column(nullable = true)
+    private LocalTime halfDayStartTime;
+    @Getter
+    @Column(nullable = true)
+    private LocalTime halfDayEndTime;
+
     private LocalTime startTime;
     private LocalTime endTime;
 
@@ -51,8 +61,12 @@ public class LeaveRequest {
     @Column(nullable = false)
     private Boolean active = true;
 
+    @Getter
     private LocalDateTime createdAt;
+    @Getter
     private LocalDateTime updatedAt;
+    @Enumerated(EnumType.STRING)
+    private LeaveDuration leaveDuration;       // FULL_DAY or HALF_DAY_MORNING / HALF_DAY_AFTERNOON
 
     @PrePersist
     protected void onCreate() {
@@ -162,19 +176,42 @@ public class LeaveRequest {
         this.active = active;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
     }
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    public  double getLeaveDuration() {
+        // Check if it's a full-day leave
+        if (this.leaveDuration == LeaveDuration.FULL_DAY) {
+            // Calculate the duration in days (start to end date)
+            return ChronoUnit.DAYS.between(this.startDate, this.endDate) + 1; // Add 1 to include the start day
+        }
+
+        // Check if it's a half-day leave
+        if (this.leaveDuration == LeaveDuration.HALF_DAY_MORNING || this.leaveDuration == LeaveDuration.HALF_DAY_AFTERNOON) {
+            return 0.5; // Half-day leave is considered as 0.5 day
+        }
+
+        // Default return (if there's no valid duration type)
+        return 0;
+    }
+
+    public void setHalfDayStartTime(LocalTime halfDayStartTime) {
+        this.halfDayStartTime = halfDayStartTime;
+    }
+
+    public void setHalfDayEndTime(LocalTime halfDayEndTime) {
+        this.halfDayEndTime = halfDayEndTime;
+    }
+
+    public void setLeaveDuration(LeaveDuration leaveDuration) {
+        this.leaveDuration = leaveDuration;
+    }
 }
+
+
+
