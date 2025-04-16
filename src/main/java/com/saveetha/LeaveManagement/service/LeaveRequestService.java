@@ -26,26 +26,24 @@ public class LeaveRequestService {
     private final LeaveTypeRepository leaveTypeRepository;
     private final LeaveAlterationRepository leaveAlterationRepository;
     private final LeaveApprovalService leaveApprovalService;
-    private final EmployeeLeaveBalanceRepository leaveBalanceRepository;
-    private final LeaveResetService leaveResetService;
 
-    public LeaveRequest createDraftLeaveRequest(LeaveRequestDTO dto) {
-        Employee employee = employeeRepository.findByEmpId(dto.getEmpId())
+    public LeaveRequest createDraftLeaveRequest(LeaveRequestDTO leaveRequestdto) {
+        Employee employee = employeeRepository.findByEmpId(leaveRequestdto.getEmpId())
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        LeaveType leaveType = leaveTypeRepository.findById(dto.getLeaveTypeId())
+        LeaveType leaveType = leaveTypeRepository.findById(leaveRequestdto.getLeaveTypeId())
                 .orElseThrow(() -> new RuntimeException("LeaveType not found"));
 
         LeaveRequest leaveRequest = new LeaveRequest();
         leaveRequest.setEmployee(employee);
         leaveRequest.setLeaveType(leaveType);
-        leaveRequest.setStartDate(dto.getStartDate());
-        leaveRequest.setEndDate(dto.getEndDate());
-        leaveRequest.setStartTime(dto.getStartTime());
-        leaveRequest.setEndTime(dto.getEndTime());
-        leaveRequest.setReason(dto.getReason());
-        leaveRequest.setEarnedDate(dto.getEarnedDate());
-        leaveRequest.setFileUpload(dto.getFileUpload());
+        leaveRequest.setStartDate(leaveRequestdto.getStartDate());
+        leaveRequest.setEndDate(leaveRequestdto.getEndDate());
+        leaveRequest.setStartTime(leaveRequestdto.getStartTime());
+        leaveRequest.setEndTime(leaveRequestdto.getEndTime());
+        leaveRequest.setReason(leaveRequestdto.getReason());
+        leaveRequest.setEarnedDate(leaveRequestdto.getEarnedDate());
+        leaveRequest.setFileUpload(leaveRequestdto.getFileUpload());
         leaveRequest.setStatus(LeaveStatus.DRAFT); // <-- Important for draft
 
         return leaveRequestRepository.save(leaveRequest);
@@ -73,46 +71,6 @@ public class LeaveRequestService {
                 }
             }
         }
-        // Fetch employee's leave balance for the requested leave type
-        Employee employee = leaveRequest.getEmployee();
-        LeaveType leaveType = leaveRequest.getLeaveType();
-        EmployeeLeaveBalance leaveBalance = leaveBalanceRepository.findByEmployeeAndLeaveType(employee, leaveType)
-                .orElseThrow(() -> new RuntimeException("Leave balance not found"));
-
-        // Perform leave type specific validation
-     // switch (leaveType.getTypeName().toUpperCase()) {
-             // case "CL": // Casual Leave (1 per month)
-                 // validateCasualLeave(leaveBalance, leaveRequest);
-               //    break;
-         //   case "ML": // Medical Leave (6 per year, 3+ days)
-             //   validateMedicalLeave(leaveBalance, leaveRequest);
-             //   break;
-       //     case "EL": // Earned Leave (12 per year, 3+ days)
-             //   validateEarnedLeave(leaveBalance, leaveRequest);
-              //  break;
-         //   case "PERMISSION": // Permission Leave (2 per month, 1 hour each)
-             //   validatePermissionLeave(leaveBalance, leaveRequest);
-             //   break;
-         //   case "LATE PERMISSION": // Same as Permission Leave but 10 minutes each
-            //    validateLatePermissionLeave(leaveBalance, leaveRequest);
-              //  break;
-         //   case "VACATION": // Vacation (Approval-based)
-                // No balance validation, just approval
-             //   break;
-           // case "COMPOFF": // Comp Off (Approval-based)
-              //  validateCompOffLeave(leaveBalance, leaveRequest);
-              //  break;
-         //   case "RELIGION HOLIDAY": // Religion Holiday (1 per year)
-                //validateReligionHoliday(leaveBalance, leaveRequest);
-          //      break;
-         //   case "LOP": // LOP (Approval-based)
-       //     case "OD": // OD (Approval-based)
-         //   case "SPECIAL OD": // Special OD (Approval-based)
-                // No balance validation, just approval
-       //         break;
-        //    default:
-        //        throw new RuntimeException("Unknown leave type.");
-     //   }
 
         // If no alteration or all alterations are valid, proceed
         leaveRequest.setStatus(LeaveStatus.PENDING);

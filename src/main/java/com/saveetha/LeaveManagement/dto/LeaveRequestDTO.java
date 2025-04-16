@@ -1,5 +1,7 @@
 package com.saveetha.LeaveManagement.dto;
 
+import com.saveetha.LeaveManagement.entity.LeaveRequest;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -86,4 +88,18 @@ public class LeaveRequestDTO {
     public void setFileUpload(String fileUpload) {
         this.fileUpload = fileUpload;
     }
+    public static LeaveRequestDTO fromEntity(LeaveRequest leaveRequest) {
+        LeaveRequestDTO dto = new LeaveRequestDTO();
+        dto.setLeaveTypeId(leaveRequest.getLeaveType().getLeaveTypeId());  // Assuming LeaveRequest has a LeaveType entity with an ID
+        dto.setStartDate(leaveRequest.getStartDate());
+        dto.setEndDate(leaveRequest.getEndDate());
+        dto.setStartTime(leaveRequest.getStartTime());
+        dto.setEndTime(leaveRequest.getEndTime());
+        dto.setReason(leaveRequest.getReason());
+        dto.setEarnedDate(leaveRequest.getEarnedDate());
+        dto.setFileUpload(leaveRequest.getFileUpload());
+        // If class periods are not directly stored in the entity, we can remove this or handle it separately
+        return dto;
+    }
+
 }

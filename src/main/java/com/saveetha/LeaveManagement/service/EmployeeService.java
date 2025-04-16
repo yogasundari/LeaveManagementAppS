@@ -25,6 +25,7 @@ public class EmployeeService {
     private final LeaveResetService leaveResetService;
     private final ApprovalFlowRepository approvalFlowRepository;
     private LeaveTypeRepository leaveTypeRepository;
+    private  InitializeLeaveBalanceService initializeLeaveBalanceService;
 
 
     @Autowired
@@ -32,9 +33,11 @@ public class EmployeeService {
                            DepartmentRepository departmentRepository,
                            LeaveResetService leaveResetService,
                            LeaveTypeRepository leaveTypeRepository,
+                           InitializeLeaveBalanceService initializeLeaveBalanceService,
                            ApprovalFlowRepository approvalFlowRepository) {
         this.employeeRepository = employeeRepository;
         this.leaveResetService = leaveResetService;
+        this.initializeLeaveBalanceService = initializeLeaveBalanceService;
         this.leaveTypeRepository = leaveTypeRepository;
         this.departmentRepository = departmentRepository;
         this.approvalFlowRepository = approvalFlowRepository;
@@ -88,10 +91,11 @@ public class EmployeeService {
 
                 // Get the list of LeaveTypes and determine the academic year based on joining date
                 List<LeaveType> leaveTypes = leaveTypeRepository.findAll();  // Assuming this method is available
-                String academicYear = determineAcademicYear(employeeUpdateDTO.getJoiningDate(), leaveTypes);  // Pass only the joining date
+                String academicYear = determineAcademicYear(LocalDate.now());  // e.g., "2024-2025"
+                // Pass only the joining date
 
                 // Call the leave balance initialization function from LeaveResetService
-                leaveResetService.initializeLeaveBalance(employee, leaveTypes, academicYear);
+                initializeLeaveBalanceService.initializeLeaveBalance(employee, leaveTypes, academicYear);
             }
 
             employeeRepository.save(employee);
@@ -100,30 +104,15 @@ public class EmployeeService {
 
         return false;
     }
-    public String determineAcademicYear(LocalDate joiningDate, List<LeaveType> leaveTypes) {
-        if (joiningDate == null) {
-            return null; // Or handle it according to your needs
+    public String determineAcademicYear(LocalDate date) {
+        int year = date.getYear();
+        LocalDate academicYearStart = LocalDate.of(year, 5, 26); // 26 May of the current year
+
+        if (date.isBefore(academicYearStart)) {
+            return (year - 1) + "-" + year;
+        } else {
+            return year + "-" + (year + 1);
         }
-
-        for (LeaveType leaveType : leaveTypes) {
-            // Retrieve the academic year start and end dates from the LeaveType
-            LocalDate academicYearStart = leaveType.getAcademicYearStart();
-            LocalDate academicYearEnd = leaveType.getAcademicYearEnd();
-
-            // Determine the academic year based on the joining date
-            if (joiningDate.isBefore(academicYearStart)) {
-                // Joined before the academic year starts, so belong to the previous year
-                return (academicYearStart.getYear() - 1) + "-" + academicYearStart.getYear(); // Example: "2023-2024"
-            } else if (joiningDate.isAfter(academicYearEnd)) {
-                // Joined after the academic year ends, so belong to the next academic year
-                return academicYearStart.getYear() + "-" + (academicYearStart.getYear() + 1); // Example: "2024-2025"
-            } else {
-                // Joined within the current academic year range
-                return academicYearStart.getYear() + "-" + (academicYearStart.getYear() + 1); // Example: "2024-2025"
-            }
-        }
-
-        return null; // Return null if no matching leave types found (although this should not happen)
     }
 
 

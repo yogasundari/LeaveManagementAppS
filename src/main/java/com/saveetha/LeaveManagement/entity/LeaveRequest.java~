@@ -211,7 +211,6 @@ public class LeaveRequest {
     public void setLeaveDuration(LeaveDuration leaveDuration) {
         this.leaveDuration = leaveDuration;
     }
-    
 }
 
 
