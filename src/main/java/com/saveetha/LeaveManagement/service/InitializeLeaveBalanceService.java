@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
-public class InitializeLeaveBalanceService {
+public class InitializeLeaveBalanceService { // before academic year start , based on joining date , ml and el should be activate after 15 months , but cl will be earned 1 per month asusual , but joingi after the academic year , the first month cl can't be taken , they can take leave for remaing month
 
     @Autowired
     private final EmployeeLeaveBalanceRepository balanceRepository;

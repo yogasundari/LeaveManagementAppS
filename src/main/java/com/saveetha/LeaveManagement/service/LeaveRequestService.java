@@ -26,6 +26,7 @@ public class LeaveRequestService {
     private final LeaveTypeRepository leaveTypeRepository;
     private final LeaveAlterationRepository leaveAlterationRepository;
     private final LeaveApprovalService leaveApprovalService;
+    private final LeaveValidationService leaveValidationService;
 
     public LeaveRequest createDraftLeaveRequest(LeaveRequestDTO leaveRequestdto) {
         Employee employee = employeeRepository.findByEmpId(leaveRequestdto.getEmpId())
@@ -33,7 +34,22 @@ public class LeaveRequestService {
 
         LeaveType leaveType = leaveTypeRepository.findById(leaveRequestdto.getLeaveTypeId())
                 .orElseThrow(() -> new RuntimeException("LeaveType not found"));
-
+        // === CALL APPROPRIATE VALIDATION BASED ON LEAVE TYPE ===
+        String leaveName = leaveType.getTypeName().toLowerCase();
+        if (leaveName.equals("cl")) {
+            leaveValidationService.validateCasualLeave(leaveRequestdto);
+        } else
+        if (leaveName.equals("permission")) {
+            leaveValidationService.validatePermissionLeave(leaveRequestdto);
+        } else if (leaveName.equals("medical leave")) {
+            leaveValidationService.validateMedicalLeave(leaveRequestdto);
+        } else if (leaveName.equals("earned leave")) {
+            leaveValidationService.validateEarnedLeave(leaveRequestdto);
+        } else if (leaveName.equals("comp off")) {
+            leaveValidationService.validateCompOffLeave(leaveRequestdto);
+        } else {
+            throw new RuntimeException("Unknown Leave Type: " + leaveName);
+        }
         LeaveRequest leaveRequest = new LeaveRequest();
         leaveRequest.setEmployee(employee);
         leaveRequest.setLeaveType(leaveType);

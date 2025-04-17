@@ -1,6 +1,6 @@
 api url
 
-Authentication:
+---------------------------------------Authentication:---------------------------------------------------------
 register------->POST--->http://localhost:8080/auth/register
         {
            "empId":"TSAI001",
@@ -15,7 +15,7 @@ login-------->POST---->http://localhost:8080/auth/login
     }
 
 
-Update-Profile:
+=--------------------------------------------------Update-Profile:---------------------------------
 
 update user profile -->PUT------>http://localhost:8080/api/employees/update/{empId} // actual employee id
 {
@@ -38,7 +38,7 @@ Soft delete (inactive)---->PATCH---->http://localhost:8080/api/employees/deactiv
 Reactivate employee----->PATCH---->http://localhost:8080/api/employees/activate/{id}
 Permanently delete---->DELETE---->http://localhost:8080/api/employees/{id}
 
-
+-------------------------------------APROVAL FLOW :--------------------------------------------------------------------------
 createapprovalflow---------->http://localhost:8080/api/approval-flows/create
     {
            "name": "Scoft Office",
@@ -47,6 +47,7 @@ createapprovalflow---------->http://localhost:8080/api/approval-flows/create
                },
            "active": true
     }
+--------------------------------------LEAVE TYPE-------------------------------------------------------------------
 createlevaeType----------->http://localhost:8080/api/leave-types/create
    {
             "typeName": "CL",
@@ -59,6 +60,7 @@ createlevaeType----------->http://localhost:8080/api/leave-types/create
             "maxCarryForward":11,
             "active": true
 }
+-------------------------------------------------APPROVAL FLOW---------------------------------------------------------------
 createapprovalflow---------->http://localhost:8080/api/approval-flows/create
     {
            "name": "Scoft Office",
@@ -68,7 +70,7 @@ createapprovalflow---------->http://localhost:8080/api/approval-flows/create
            "active":true
 
 }
-
+-----------------------------------------------APPROVAL FLOW LEVEL----------------------------------------------------
 createApprovalFlowLevel----------->http://localhost:8080/api/approval-flow-levels
 {
   "approvalFlow": {
@@ -80,21 +82,7 @@ createApprovalFlowLevel----------->http://localhost:8080/api/approval-flow-level
   },
   "active": true
 }
-update user profile -->http://localhost:8080/api/employees/update/{empId} // actual employee id
-{
-  "empName": "yogasundari",
-  "designation": "Professor",
-  "departmentId": 2,
-  "staffType": "TEACHING"
-}
-{
-  "empName": "IT-HOD",
-  "designation": "HOD",
-  "departmentId": 2,
-  "staffType": "TEACHING",
-  "profilePicture":"image.png",
-  "approvalFlow":1
-}
+---------------------------------LEAVE REQUEST---------------------------------------------------------
 Leave Request --->http://localhost:8080/api/leave-request/create
 {
   "empId": "TSAI001",
@@ -107,6 +95,7 @@ Leave Request --->http://localhost:8080/api/leave-request/create
   "earnedDate": null,
   "fileUpload": null
 }
+------------------------------LEAVE ALTERATION------------------------------------------------------------
 leave Alteration-Moodel link --> http://localhost:8080/api/leave-alteration/assign
 {
   "requestId": 1,
@@ -132,7 +121,7 @@ leave alteration staff --> http://localhost:8080/api/leave-alteration/assign
 to approve the faculty --> http://localhost:8080/api/leave-alteration/approve/2
 Submit the request --> post -http://localhost:8080/api/leave-request/submit/2
 to widhdraw the request --> patch ->http://localhost:8080/api/leave-request/withdraw/1
-
+-------------------------LEAVE APPROVAL----------------------------------------------------------------------------
 to approve the approver --> patch--->http://localhost:8080/api/leave-approval/process/3
 {
   "status": "APPROVED",
