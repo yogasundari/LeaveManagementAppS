@@ -30,7 +30,7 @@ public class LeaveType {
     private LocalDate academicYearStart;
     private LocalDate academicYearEnd;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Boolean canBeCarriedForward = false;
 
     private Integer maxCarryForward = 0;
