@@ -22,6 +22,7 @@ public class LeaveApprovalService {
     private final EmployeeRepository employeeRepository;
     private final ApprovalFlowLevelRepository approvalFlowLevelRepository;
     private final LeaveRequestRepository leaveRequestRepository;
+    private final EmployeeLeaveBalanceService LeaveBalanceService;
 
     public void initiateApprovalFlow(Integer leaveRequestId) {
         LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
@@ -94,6 +95,7 @@ public class LeaveApprovalService {
                 if (finalApproval.getApprover().getEmpId().equals(expectedFinalApprover.getEmpId())) {
                     request.setStatus(LeaveStatus.APPROVED);
                     leaveRequestRepository.save(request);
+                    LeaveBalanceService.deductLeaveBalanceOnApproval(request);
                     return "Leave request approved by final approver";
                 }
             }

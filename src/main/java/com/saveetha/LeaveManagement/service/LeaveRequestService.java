@@ -36,20 +36,36 @@ public class LeaveRequestService {
                 .orElseThrow(() -> new RuntimeException("LeaveType not found"));
         // === CALL APPROPRIATE VALIDATION BASED ON LEAVE TYPE ===
         String leaveName = leaveType.getTypeName().toLowerCase();
-        if (leaveName.equals("cl")) {
-            leaveValidationService.validateCasualLeave(leaveRequestdto);
-        } else
-        if (leaveName.equals("permission")) {
-            leaveValidationService.validatePermissionLeave(leaveRequestdto);
-        } else if (leaveName.equals("medical leave")) {
-            leaveValidationService.validateMedicalLeave(leaveRequestdto);
-        } else if (leaveName.equals("earned leave")) {
-            leaveValidationService.validateEarnedLeave(leaveRequestdto);
-        } else if (leaveName.equals("comp off")) {
-            leaveValidationService.validateCompOffLeave(leaveRequestdto);
-        } else {
-            throw new RuntimeException("Unknown Leave Type: " + leaveName);
+        System.out.println("✅ Leave Type Name: " + leaveName);
+        switch (leaveName) {
+            case "cl":
+                leaveValidationService.validateCasualLeave(leaveRequestdto);
+                break;
+            case "permission":
+                leaveValidationService.validatePermissionLeave(leaveRequestdto);
+                break;
+            case "ml":
+                leaveValidationService.validateMedicalLeave(leaveRequestdto);
+                break;
+            case "el":
+                leaveValidationService.validateEarnedLeave(leaveRequestdto);
+                break;
+            case "comp off":
+                leaveValidationService.validateCompOff(leaveRequestdto);
+                break;
+            case "lop":
+                leaveValidationService.validatelop(leaveRequestdto);
+                break;
+            case "vacation":
+                leaveValidationService.validatevacation(leaveRequestdto);
+                break;
+            case "late":
+                leaveValidationService.validatelate(leaveRequestdto);
+                break;
+            default:
+                throw new RuntimeException("Unknown Leave Type: " + leaveName);
         }
+
         LeaveRequest leaveRequest = new LeaveRequest();
         leaveRequest.setEmployee(employee);
         leaveRequest.setLeaveType(leaveType);

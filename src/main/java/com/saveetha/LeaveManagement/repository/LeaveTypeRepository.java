@@ -12,5 +12,6 @@ public interface LeaveTypeRepository extends JpaRepository<LeaveType, Integer> {
     Optional<LeaveType> findByTypeName(String typeName);
     @Query("SELECT lt FROM LeaveType lt WHERE lt.active = true")
     List<LeaveType> findAllActive();
+    Optional<LeaveType> findByTypeNameIgnoreCase(String typeName);
     LeaveType findByAcademicYearStartAndAcademicYearEnd(LocalDate start, LocalDate end);
 }

@@ -38,7 +38,15 @@ Soft delete (inactive)---->PATCH---->http://localhost:8080/api/employees/deactiv
 Reactivate employee----->PATCH---->http://localhost:8080/api/employees/activate/{id}
 Permanently delete---->DELETE---->http://localhost:8080/api/employees/{id}
 
-
+-------------------------------------APROVAL FLOW :--------------------------------------------------------------------------
+createapprovalflow---------->http://localhost:8080/api/approval-flows/create
+    {
+           "name": "Scoft Office",
+           "finalApprover": {
+           "empId": "TSAI002"
+               },
+           "active": true
+    }
 --------------------------------------LEAVE TYPE-------------------------------------------------------------------
 createlevaeType----------->http://localhost:8080/api/leave-types/create
    {

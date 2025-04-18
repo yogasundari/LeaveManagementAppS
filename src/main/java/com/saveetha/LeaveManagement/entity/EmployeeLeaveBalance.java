@@ -62,4 +62,83 @@ public class EmployeeLeaveBalance {
         this.id = new EmployeeLeaveBalanceId(employee.getEmpId(), leaveType.getLeaveTypeId());
     }
 
+    public EmployeeLeaveBalanceId getId() {
+        return id;
+    }
+
+    public void setId(EmployeeLeaveBalanceId id) {
+        this.id = id;
+    }
+
+    public Employee getEmployee() {
+        return employee;
+    }
+
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
+    }
+
+    public LeaveType getLeaveType() {
+        return leaveType;
+    }
+
+    public void setLeaveType(LeaveType leaveType) {
+        this.leaveType = leaveType;
+    }
+
+    public Double getUsedLeaves() {
+        return usedLeaves;
+    }
+
+    public void setUsedLeaves(Double usedLeaves) {
+        this.usedLeaves = usedLeaves;
+    }
+
+    public Double getBalanceLeave() {
+        return balanceLeave;
+    }
+
+    public void setBalanceLeave(Double balanceLeave) {
+        this.balanceLeave = balanceLeave;
+    }
+
+    public Double getCarryForwardLeave() {
+        return carryForwardLeave;
+    }
+
+    public void setCarryForwardLeave(Double carryForwardLeave) {
+        this.carryForwardLeave = carryForwardLeave;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public String getCurrentYear() {
+        return currentYear;
+    }
+
+    public void setCurrentYear(String currentYear) {
+        this.currentYear = currentYear;
+    }
 }
