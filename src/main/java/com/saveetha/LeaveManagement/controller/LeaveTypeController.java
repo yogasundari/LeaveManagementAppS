@@ -17,21 +17,21 @@ public class LeaveTypeController {
     @Autowired
     private LeaveTypeService leaveTypeService;
 
-    // ✅ Only Admins Can Create
+    //  Only Admins Can Create
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<LeaveType> createLeaveType(@Valid @RequestBody LeaveType leaveType) {
         return ResponseEntity.ok(leaveTypeService.createLeaveType(leaveType));
     }
 
-    // ✅ All Users Can View Leave Types
+    // All Users Can View Leave Types
     @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     @GetMapping
     public ResponseEntity<List<LeaveType>> getAllLeaveTypes() {
         return ResponseEntity.ok(leaveTypeService.getAllLeaveTypes());
     }
 
-    // ✅ All Users Can View a Specific Leave Type
+    // All Users Can View a Specific Leave Type
     @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     @GetMapping("/{id}")
     public ResponseEntity<LeaveType> getLeaveTypeById(@PathVariable Integer id) {
@@ -40,14 +40,14 @@ public class LeaveTypeController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // ✅ Only Admins Can Update
+    //  Only Admins Can Update
     @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<LeaveType> updateLeaveType(@PathVariable Integer id, @Valid @RequestBody LeaveType leaveType) {
         return ResponseEntity.ok(leaveTypeService.updateLeaveType(id, leaveType));
     }
 
-    // ✅ Only Admins Can Delete
+    // Only Admins Can Delete
     @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteLeaveType(@PathVariable Integer id) {

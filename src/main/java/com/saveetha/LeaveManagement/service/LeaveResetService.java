@@ -54,7 +54,7 @@ public class LeaveResetService {
             }
         }
 
-        System.out.println("✅ Leave balances reset for academic year: " + newAcademicYear);
+        System.out.println("----------************---------Leave balances reset for academic year:-------------------******** " + newAcademicYear);
     }
 
 

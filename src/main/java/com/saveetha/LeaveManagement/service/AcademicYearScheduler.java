@@ -20,7 +20,7 @@ public class AcademicYearScheduler {
 
     // This will run every day at 1 A
 
-        @Scheduled(cron = "0 0 1 26 5 *") // runs at 1:00 AM on April 17th every year
+        @Scheduled(cron = "0 22 14 19 4 *") // runs at 1:00 AM on April 17th every year
         public void updateAcademicYear() {
             LocalDate start = LocalDate.now();
             LocalDate end = start.plusYears(1).minusDays(1); // 1-year period

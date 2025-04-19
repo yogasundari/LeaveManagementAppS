@@ -6,15 +6,12 @@ import com.saveetha.LeaveManagement.entity.LeaveAlteration;
 import com.saveetha.LeaveManagement.entity.LeaveRequest;
 import com.saveetha.LeaveManagement.entity.LeaveType;
 import com.saveetha.LeaveManagement.enums.AlterationType;
-import com.saveetha.LeaveManagement.enums.LeaveDuration;
 import com.saveetha.LeaveManagement.enums.LeaveStatus;
 import com.saveetha.LeaveManagement.enums.NotificationStatus;
 import com.saveetha.LeaveManagement.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import com.saveetha.LeaveManagement.entity.EmployeeLeaveBalance;
 
-import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -34,9 +31,9 @@ public class LeaveRequestService {
 
         LeaveType leaveType = leaveTypeRepository.findById(leaveRequestdto.getLeaveTypeId())
                 .orElseThrow(() -> new RuntimeException("LeaveType not found"));
-        // === CALL APPROPRIATE VALIDATION BASED ON LEAVE TYPE ===
+        // -----CALL APPROPRIATE VALIDATION BASED ON LEAVE TYPE ------------
         String leaveName = leaveType.getTypeName().toLowerCase();
-        System.out.println("✅ Leave Type Name: " + leaveName);
+        System.out.println("Leave Type Name: " + leaveName);
         switch (leaveName) {
             case "cl":
                 leaveValidationService.validateCasualLeave(leaveRequestdto);

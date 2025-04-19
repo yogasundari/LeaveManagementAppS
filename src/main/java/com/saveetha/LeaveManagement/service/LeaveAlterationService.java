@@ -57,7 +57,7 @@ public class LeaveAlterationService {
         alteration.setSubjectCode(dto.getSubjectCode());
         alteration.setSubjectName(dto.getSubjectName());
         System.out.println("Notification sent to replacement faculty (Emp ID: " + dto.getReplacementEmpId() + ")");
-        leaveAlterationRepository.save(alteration); // ✅ Now this is valid!
+        leaveAlterationRepository.save(alteration);
 
         return "Alteration created successfully!";
     }

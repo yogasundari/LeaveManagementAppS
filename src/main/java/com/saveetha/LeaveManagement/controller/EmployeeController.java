@@ -19,7 +19,7 @@ public class EmployeeController {
         this.employeeService = employeeService;
     }
 
-    // ✅ Update Employee API
+    //  Update Employee API
     @PutMapping("/update/{empId}")
     @PreAuthorize("hasAnyAuthority('EMPLOYEE', 'ADMIN')")  // Restrict access
     public ResponseEntity<String> updateEmployee(
@@ -33,21 +33,21 @@ public class EmployeeController {
             return ResponseEntity.badRequest().body("Failed to update employee.");
         }
     }
-    // ✅ Get all employees
+    // Get all employees
     @GetMapping
     public ResponseEntity<List<Employee>> getAllEmployees() {
         List<Employee> employees = employeeService.getAllEmployees();
         return ResponseEntity.ok(employees);
     }
 
-    // ✅ Get employee by ID
+    // Get employee by ID
     @GetMapping("/{empId}")
     public ResponseEntity<Employee> getEmployeeById(@PathVariable String empId) {
         return employeeService.getEmployeeById(empId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-    // ✅ Soft delete - deactivate employee
+    // Soft delete - deactivate employee
     @PatchMapping("/deactivate/{empId}")
     public ResponseEntity<String> deactivateEmployee(@PathVariable String empId) {
         boolean result = employeeService.deactivateEmployee(empId);
@@ -55,7 +55,7 @@ public class EmployeeController {
                 : ResponseEntity.notFound().build();
     }
 
-    // ✅ Reactivate employee
+    // Reactivate employee
     @PatchMapping("/activate/{empId}")
     public ResponseEntity<String> activateEmployee(@PathVariable String empId) {
         boolean result = employeeService.activateEmployee(empId);

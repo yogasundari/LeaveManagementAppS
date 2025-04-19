@@ -78,5 +78,12 @@ public class AcademicMonthCycleUtil {
 
         return null; // Return null if the date doesn't match any academic month
     }
+    public LocalDate getAcademicYearStart() {
+        List<LeaveType> leaveTypes = leaveTypeRepository.findAll();
+        if (!leaveTypes.isEmpty()) {
+            return leaveTypes.get(0).getAcademicYearStart();
+        }
+        return null;
+    }
 
 }

@@ -43,6 +43,41 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Inte
             @Param("endDate") LocalDate endDate
     );
 
+    @Query("SELECT lr FROM LeaveRequest lr WHERE " +
+            "lr.employee.empId = :empId AND " +
+            "lr.leaveType.leaveTypeId = :leaveTypeId AND " +
+            "lr.status IN :statuses AND " +
+            "((lr.startDate BETWEEN :startDate AND :endDate) OR " +
+            "(lr.endDate BETWEEN :startDate AND :endDate))")
+    List<LeaveRequest> findOverlappingLeaveRequestsByTypeId(
+            @Param("empId") String empId,
+            @Param("leaveTypeId") Integer leaveTypeId,
+            @Param("statuses") List<LeaveStatus> statuses,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 
-    // You can add more methods as needed (e.g., find by date range, leave type, etc.)
+    @Query("SELECT lr FROM LeaveRequest lr WHERE " +
+            "lr.employee.empId = :empId AND " +
+            "lr.leaveType.leaveTypeId = :leaveTypeId AND " +
+            "lr.status IN :statuses AND " +
+            "lr.earnedDate = :earnedDate")
+    List<LeaveRequest> findCompOffRequestsByEarnedDate(
+            @Param("empId") String empId,
+            @Param("leaveTypeId") Integer leaveTypeId,
+            @Param("statuses") List<LeaveStatus> statuses,
+            @Param("earnedDate") LocalDate earnedDate);
+
+    @Query("SELECT lr FROM LeaveRequest lr WHERE " +
+            "lr.employee.empId = :empId AND " +
+            "lr.leaveType.leaveTypeId = :leaveTypeId AND " +
+            "lr.status IN :statuses AND " +
+            "lr.startDate >= :academicYearStart AND lr.startDate <= :now")
+    List<LeaveRequest> findUsedCLsForEmployeeInAcademicYear(
+            @Param("empId") String empId,
+            @Param("leaveTypeId") Integer leaveTypeId,
+            @Param("statuses") List<LeaveStatus> statuses,
+            @Param("academicYearStart") LocalDate academicYearStart,
+            @Param("now") LocalDate now
+    );
+
 }

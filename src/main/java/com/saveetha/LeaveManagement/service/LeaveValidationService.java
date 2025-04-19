@@ -10,9 +10,11 @@ import com.saveetha.LeaveManagement.repository.EmployeeLeaveBalanceRepository;
 import com.saveetha.LeaveManagement.repository.EmployeeRepository;
 import com.saveetha.LeaveManagement.repository.LeaveRequestRepository;
 import com.saveetha.LeaveManagement.repository.LeaveTypeRepository;
+import com.saveetha.LeaveManagement.utility.AcademicMonthCycleUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
@@ -24,9 +26,11 @@ public class LeaveValidationService {
     private final EmployeeRepository employeeRepository;
     private final LeaveTypeRepository leaveTypeRepository;
     private final EmployeeLeaveBalanceRepository employeeLeaveBalanceRepository;
+    private final AcademicMonthCycleUtil academicMonthCycleUtil ;
 
-    public LeaveValidationService(LeaveRequestRepository leaveRequestRepository, EmployeeRepository employeeRepository, LeaveTypeRepository leaveTypeRepository, EmployeeLeaveBalanceRepository employeeLeaveBalanceRepository) {
+    public LeaveValidationService(LeaveRequestRepository leaveRequestRepository,AcademicMonthCycleUtil academicMonthCycleUtil, EmployeeRepository employeeRepository, LeaveTypeRepository leaveTypeRepository, EmployeeLeaveBalanceRepository employeeLeaveBalanceRepository) {
         this.leaveRequestRepository = leaveRequestRepository;
+        this.academicMonthCycleUtil = academicMonthCycleUtil;
         this.employeeRepository = employeeRepository;
         this.leaveTypeRepository = leaveTypeRepository;
         this.employeeLeaveBalanceRepository = employeeLeaveBalanceRepository;
@@ -132,8 +136,6 @@ public class LeaveValidationService {
                     "Currently used/pending: " + totalUsedOrPendingEL + ", Requested: " + requestedDays);
         }
     }
-
-
     public void validateCompOff(LeaveRequestDTO dto) {
         // Step 1: Ensure earned date is provided
         if (dto.getEarnedDate() == null) {
@@ -145,24 +147,87 @@ public class LeaveValidationService {
             throw new RuntimeException("Earned Date must be before the leave Start Date.");
         }
 
-        // Step 3: Check for overlapping Comp Off leave requests
-        List<LeaveRequest> overlappingRequests = leaveRequestRepository.findOverlappingLeaveRequests(
+        // Step 3: Retrieve the leave type ID for "comp off" from the database
+        LeaveType compOffType = leaveTypeRepository.findByTypeNameIgnoreCase("comp off")
+                .orElseThrow(() -> new RuntimeException("Comp Off leave type not found."));
+
+        Integer compOffTypeId = compOffType.getLeaveTypeId();  // Get leaveTypeId (Integer)
+
+        // Step 4: Check if the earned date is already used for another Comp Off request (Pending, Approved, or Draft)
+        List<LeaveRequest> existingEarnedDateRequests = leaveRequestRepository.findCompOffRequestsByEarnedDate(
                 dto.getEmpId(),
-                "comp off", // or the actual value stored in your DB
-                Arrays.asList(LeaveStatus.PENDING, LeaveStatus.APPROVED),
+                compOffTypeId,  // Use the correct leaveTypeId for 'Comp Off'
+                Arrays.asList(LeaveStatus.PENDING, LeaveStatus.APPROVED, LeaveStatus.DRAFT), // Checking for PENDING, APPROVED, or DRAFT status
+                dto.getEarnedDate()
+        );
+
+        // If any requests exist, throw an exception to prevent using the same earned date again
+        if (!existingEarnedDateRequests.isEmpty()) {
+            throw new RuntimeException("The earned date you have already used");
+        }
+
+        // Step 5: Check for overlapping Comp Off leave requests (same leave type, start date, end date)
+        List<LeaveRequest> overlappingRequests = leaveRequestRepository.findOverlappingLeaveRequestsByTypeId(
+                dto.getEmpId(),
+                compOffTypeId,  // Pass the Integer leaveTypeId here
+                Arrays.asList(LeaveStatus.PENDING, LeaveStatus.APPROVED, LeaveStatus.DRAFT), // Checking for PENDING, APPROVED, or DRAFT status
                 dto.getStartDate(),
                 dto.getEndDate()
         );
 
+        // If any overlapping requests are found, throw an exception
         if (!overlappingRequests.isEmpty()) {
             throw new RuntimeException("Overlapping Comp Off leave request exists for the selected dates.");
         }
     }
+    public void validateCasualLeave(LeaveRequestDTO dto) {
+        String empId = dto.getEmpId();
+        LocalDate startDate = dto.getStartDate();
+        LocalDate endDate = dto.getEndDate();
 
+        // Step 1: Get Casual Leave Type
+        LeaveType clType = leaveTypeRepository.findByTypeNameIgnoreCase("CL")
+                .orElseThrow(() -> new RuntimeException("Casual Leave type not found"));
+        Integer clTypeId = clType.getLeaveTypeId();
 
-    public void validateCasualLeave(LeaveRequestDTO leaveRequestDTO){
+        // Step 2: Get academic cycle start date (e.g., May 26th to next May 25yh)
+        LocalDate academicYearStart = academicMonthCycleUtil.getAcademicYearStart();
 
+        // Step 3: Calculate how many CLs earned until now in the academic year
+        long monthsSinceStart = ChronoUnit.MONTHS.between(
+                academicYearStart.withDayOfMonth(25),
+                LocalDate.now().withDayOfMonth(25)
+        ) + 1;
+
+        int totalEarnedCL = (int) monthsSinceStart;
+
+        // Step 4: Get number of used CLs (DRAFT, PENDING, APPROVED) in current academic year
+        List<LeaveRequest> usedCLs = leaveRequestRepository.findUsedCLsForEmployeeInAcademicYear(
+                empId,
+                clTypeId,
+                Arrays.asList(LeaveStatus.DRAFT, LeaveStatus.PENDING, LeaveStatus.APPROVED),
+                academicYearStart,
+                LocalDate.now()
+        );
+
+        if (usedCLs.size() >= totalEarnedCL) {
+            throw new RuntimeException("You have already used all your earned CLs for this academic year.");
+        }
+
+        // Step 5: Prevent overlapping CL requests
+        List<LeaveRequest> overlappingRequests = leaveRequestRepository.findOverlappingLeaveRequestsByTypeId(
+                empId,
+                clTypeId,
+                Arrays.asList(LeaveStatus.DRAFT, LeaveStatus.PENDING, LeaveStatus.APPROVED),
+                startDate,
+                endDate
+        );
+
+        if (!overlappingRequests.isEmpty()) {
+            throw new RuntimeException("A CL request already exists for the selected date range.");
+        }
     }
+
     public void validatelop(LeaveRequestDTO leaveRequestDTO){
 
     }
