@@ -1,7 +1,9 @@
 package com.saveetha.LeaveManagement.service;
 
+import com.saveetha.LeaveManagement.dto.ApprovalFlowUpdateDTO;
 import com.saveetha.LeaveManagement.entity.ApprovalFlow;
 import com.saveetha.LeaveManagement.repository.ApprovalFlowRepository;
+import com.saveetha.LeaveManagement.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +13,8 @@ import java.util.Optional;
 @Service
 public class ApprovalFlowService {
 
+    @Autowired
+    private EmployeeRepository employeeRepository;
     @Autowired
     private ApprovalFlowRepository approvalFlowRepository;
 
@@ -46,9 +50,25 @@ public class ApprovalFlowService {
             return approvalFlowRepository.save(approvalFlow);
         }).orElseThrow(() -> new RuntimeException("Approval Flow not found"));
     }
+    public ApprovalFlow updateApprovalFlow(Integer id, ApprovalFlowUpdateDTO dto) {
+        ApprovalFlow existingFlow = approvalFlowRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Approval flow not found"));
+
+        if (dto.getName() != null) {
+            existingFlow.setName(dto.getName());
+        }
+
+        if (dto.getActive() != null) {
+            existingFlow.setActive(dto.getActive());
+        }
+
+        return approvalFlowRepository.save(existingFlow);
+    }
 
     // Delete an approval flow
     public void deleteApprovalFlow(Integer id) {
         approvalFlowRepository.deleteById(id);
     }
+
 }
+

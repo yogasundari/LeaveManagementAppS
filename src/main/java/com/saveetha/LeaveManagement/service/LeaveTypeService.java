@@ -47,4 +47,12 @@ public class LeaveTypeService {
         }
         leaveTypeRepository.deleteById(id);
     }
+
+    public LeaveType setLeaveTypeStatus(Integer id, boolean status) {
+        LeaveType leaveType = leaveTypeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("LeaveType not found with id: " + id));
+        leaveType.setActive(status);
+        return leaveTypeRepository.save(leaveType);
+
+    }
 }

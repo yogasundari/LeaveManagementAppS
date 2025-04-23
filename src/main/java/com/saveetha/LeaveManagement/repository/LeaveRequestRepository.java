@@ -79,5 +79,18 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Inte
             @Param("academicYearStart") LocalDate academicYearStart,
             @Param("now") LocalDate now
     );
+    @Query("SELECT COUNT(l) > 0 FROM LeaveRequest l WHERE l.employee.empId = :empId AND l.leaveType.leaveTypeId = :leaveTypeId AND l.status IN :statuses AND l.startDate BETWEEN :startDate AND :endDate")
+    boolean existsCLUsedInMonth(@Param("empId") String empId,
+                                @Param("leaveTypeId") Integer leaveTypeId,
+                                @Param("statuses") List<LeaveStatus> statuses,
+                                @Param("startDate") LocalDate startDate,
+                                @Param("endDate") LocalDate endDate);
+    @Query("SELECT COUNT(l) FROM LeaveRequest l WHERE l.employee.empId = :empId AND l.leaveType.leaveTypeId = :leaveTypeId AND l.status IN :statuses AND l.startDate BETWEEN :startDate AND :endDate")
+    int countCLsUsed(@Param("empId") String empId,
+                     @Param("leaveTypeId") Integer leaveTypeId,
+                     @Param("statuses") List<LeaveStatus> statuses,
+                     @Param("startDate") LocalDate startDate,
+                     @Param("endDate") LocalDate endDate);
+
 
 }

@@ -31,6 +31,11 @@ public class AcademicMonthCycleUtil {
         }
     }
 
+    // Method to check if the current year is a leap year
+    private boolean isLeapYear(int year) {
+        return (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0));
+    }
+
     // Method to get the academic month for a given date
     public MonthCycle getAcademicMonth(LocalDate date) {
         // Fetch academic year start and end from the LeaveType repository
@@ -42,14 +47,15 @@ public class AcademicMonthCycleUtil {
         // Assuming there is only one leave type or taking the first one
         LeaveType leaveType = leaveTypes.get(0);
         LocalDate academicStartDate = leaveType.getAcademicYearStart();
-        LocalDate academicEndDate = leaveType.getAcademicYearEnd();
+
+        int academicYearStartYear = academicStartDate.getYear();
 
         // Check if the provided date is within the academic cycle
-        if (date.isBefore(academicStartDate) || date.isAfter(academicEndDate)) {
-            return null; // Date is outside the academic year
+        if (date.isBefore(academicStartDate)) {
+            return null; // Date is before the academic year start
         }
 
-        // Mapping for academic month cycles using the start and end dates
+        // Handle the academic months from May to April with specific logic for leap years
         if (date.isAfter(academicStartDate) && date.isBefore(academicStartDate.plusMonths(1))) {
             return new MonthCycle("May 26 - June 24", academicStartDate, academicStartDate.plusMonths(1).minusDays(1));
         } else if (date.isAfter(academicStartDate.plusMonths(1)) && date.isBefore(academicStartDate.plusMonths(2))) {
@@ -67,9 +73,17 @@ public class AcademicMonthCycleUtil {
         } else if (date.isAfter(academicStartDate.plusMonths(7)) && date.isBefore(academicStartDate.plusMonths(8))) {
             return new MonthCycle("December 26 - January 25", academicStartDate.plusMonths(7), academicStartDate.plusMonths(8).minusDays(1));
         } else if (date.isAfter(academicStartDate.plusMonths(8)) && date.isBefore(academicStartDate.plusMonths(9))) {
-            return new MonthCycle("January 26 - February 22 (Non-Leap)", academicStartDate.plusMonths(8), academicStartDate.plusMonths(9).minusDays(1));
+            if (isLeapYear(academicYearStartYear)) {
+                return new MonthCycle("January 26 - February 23 (Leap)", academicStartDate.plusMonths(8), academicStartDate.plusMonths(9).minusDays(2));
+            } else {
+                return new MonthCycle("January 26 - February 22 (Non-Leap)", academicStartDate.plusMonths(8), academicStartDate.plusMonths(9).minusDays(3));
+            }
         } else if (date.isAfter(academicStartDate.plusMonths(9)) && date.isBefore(academicStartDate.plusMonths(10))) {
-            return new MonthCycle("February 23 - March 25 (Non-Leap)", academicStartDate.plusMonths(9), academicStartDate.plusMonths(10).minusDays(1));
+            if (isLeapYear(academicYearStartYear)) {
+                return new MonthCycle("February 24 - March 25 (Leap)", academicStartDate.plusMonths(9), academicStartDate.plusMonths(10).minusDays(1));
+            } else {
+                return new MonthCycle("February 23 - March 25 (Non-Leap)", academicStartDate.plusMonths(9), academicStartDate.plusMonths(10).minusDays(1));
+            }
         } else if (date.isAfter(academicStartDate.plusMonths(10)) && date.isBefore(academicStartDate.plusMonths(11))) {
             return new MonthCycle("March 26 - April 24", academicStartDate.plusMonths(10), academicStartDate.plusMonths(11).minusDays(1));
         } else if (date.isAfter(academicStartDate.plusMonths(11)) && date.isBefore(academicStartDate.plusMonths(12))) {
@@ -78,6 +92,7 @@ public class AcademicMonthCycleUtil {
 
         return null; // Return null if the date doesn't match any academic month
     }
+
     public LocalDate getAcademicYearStart() {
         List<LeaveType> leaveTypes = leaveTypeRepository.findAll();
         if (!leaveTypes.isEmpty()) {
@@ -85,5 +100,4 @@ public class AcademicMonthCycleUtil {
         }
         return null;
     }
-
 }

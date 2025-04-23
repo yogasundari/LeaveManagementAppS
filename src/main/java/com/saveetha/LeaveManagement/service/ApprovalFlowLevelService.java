@@ -34,8 +34,28 @@ public class ApprovalFlowLevelService {
         return approvalFlowLevelRepository.save(approvalFlowLevel);
     }
 
+
     // Delete an approval flow level
     public void deleteApprovalFlowLevel(Integer id) {
         approvalFlowLevelRepository.deleteById(id);
     }
+    public ApprovalFlowLevel updateApprovalFlowLevel(Integer id, ApprovalFlowLevel updatedLevel) {
+        ApprovalFlowLevel existing = approvalFlowLevelRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Approval Flow Level not found"));
+
+        existing.setSequence(updatedLevel.getSequence());
+        existing.setApprover(updatedLevel.getApprover());
+        existing.setApprovalFlow(updatedLevel.getApprovalFlow());
+        // update other fields if needed
+        return approvalFlowLevelRepository.save(existing);
+    }
+
+    public ApprovalFlowLevel setActiveStatus(Integer id, boolean isActive) {
+        ApprovalFlowLevel existing = approvalFlowLevelRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Approval Flow Level not found"));
+        existing.setActive(isActive);
+        return approvalFlowLevelRepository.save(existing);
+    }
+
 }
+

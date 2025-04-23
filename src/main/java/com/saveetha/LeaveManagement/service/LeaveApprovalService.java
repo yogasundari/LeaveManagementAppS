@@ -53,32 +53,59 @@ public class LeaveApprovalService {
 
 
     @Transactional
-    public String processApproval(Integer approvalId, ApprovalStatus status, String reason) {
+    public String processApproval(Integer approvalId, ApprovalStatus status, String reason, String loggedInEmpId) {
+        // Retrieve the approval record
         LeaveApproval approval = leaveApprovalRepository.findById(approvalId)
                 .orElseThrow(() -> new RuntimeException("Approval not found"));
 
+        // Check if the approval is already processed
         if (approval.getStatus() != ApprovalStatus.PENDING)
             throw new RuntimeException("Already processed");
 
+        // Get the current approval flow level
+        ApprovalFlowLevel currentLevel = approval.getApprovalFlowLevel();
+        int currentSequence = currentLevel.getSequence();
+
+        // Retrieve the expected approver for this level
+        Employee expectedApprover = currentLevel.getApprover();
+
+        // Check if the logged-in user is the expected approver
+        if (!loggedInEmpId.equals(expectedApprover.getEmpId())) {
+            throw new RuntimeException("You are not the correct approver for this level.");
+        }
+
+        // Get all the leave approvals related to the leave request
+        LeaveRequest request = approval.getLeaveRequest();
+        List<LeaveApproval> approvals = leaveApprovalRepository.findByLeaveRequest_RequestId(request.getRequestId());
+
+        // Check if the previous approval sequence is approved
+        boolean isPreviousApproved = approvals.stream()
+                .filter(a -> a.getApprovalFlowLevel().getSequence() == currentSequence - 1)
+                .anyMatch(a -> a.getStatus() == ApprovalStatus.APPROVED);
+
+        // If the current sequence is not the first sequence and the previous sequence is not approved, block the approval
+        if (currentSequence > 1 && !isPreviousApproved) {
+            throw new RuntimeException("Previous sequence approval is pending. You cannot approve this request yet.");
+        }
+
+        // Update the approval status and reason
         approval.setStatus(status);
         approval.setReason(reason);
         approval.setUpdatedAt(LocalDateTime.now());
         leaveApprovalRepository.save(approval);
 
-        LeaveRequest request = approval.getLeaveRequest();
-
+        // If rejected, update the leave request status to REJECTED
         if (status == ApprovalStatus.REJECTED) {
             request.setStatus(LeaveStatus.REJECTED);
             leaveRequestRepository.save(request);
             return "Leave request rejected by " + approval.getApprover().getEmpId();
         }
 
-        // If approved, check if current approver is final approver
-        List<LeaveApproval> approvals = leaveApprovalRepository.findByLeaveRequest_RequestId(request.getRequestId());
-
+        // If approved, check if current approver is the final approver
         boolean allApproved = approvals.stream()
                 .allMatch(a -> a.getStatus() == ApprovalStatus.APPROVED);
 
+        // If all approvals are completed, check for the final approver
         if (allApproved) {
             int maxSequence = approvals.stream()
                     .mapToInt(a -> a.getApprovalFlowLevel().getSequence())
@@ -92,6 +119,7 @@ public class LeaveApprovalService {
             if (finalApproval != null) {
                 Employee expectedFinalApprover = request.getEmployee().getApprovalFlow().getFinalApprover();
 
+                // Check if the final approver is the correct one
                 if (finalApproval.getApprover().getEmpId().equals(expectedFinalApprover.getEmpId())) {
                     request.setStatus(LeaveStatus.APPROVED);
                     leaveRequestRepository.save(request);
@@ -101,7 +129,44 @@ public class LeaveApprovalService {
             }
         }
 
+        // If not yet fully approved, return a message about the current approval level
         return "Leave approved at current level and pending further approval";
+    }
+
+
+
+    // New method: Update approval
+    @Transactional
+    public String updateApproval(Integer approvalId, ApprovalStatus status, String reason) {
+        LeaveApproval approval = leaveApprovalRepository.findById(approvalId)
+                .orElseThrow(() -> new RuntimeException("Approval not found"));
+
+        approval.setStatus(status);
+        approval.setReason(reason);
+        approval.setUpdatedAt(LocalDateTime.now());
+        leaveApprovalRepository.save(approval);
+
+        return "Approval updated successfully";
+    }
+
+    // New method: Delete approval
+    @Transactional
+    public void deleteApproval(Integer approvalId) {
+        LeaveApproval approval = leaveApprovalRepository.findById(approvalId)
+                .orElseThrow(() -> new RuntimeException("Approval not found"));
+
+        leaveApprovalRepository.delete(approval);
+    }
+
+    // New method: Get approval by ID
+    public LeaveApproval getApprovalById(Integer approvalId) {
+        return leaveApprovalRepository.findById(approvalId)
+                .orElseThrow(() -> new RuntimeException("Approval not found"));
+    }
+
+    // New method: Get all approvals
+    public List<LeaveApproval> getAllApprovals() {
+        return leaveApprovalRepository.findAll();
     }
 
 

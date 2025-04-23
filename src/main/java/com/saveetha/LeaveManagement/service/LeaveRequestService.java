@@ -121,5 +121,18 @@ public class LeaveRequestService {
             throw new RuntimeException("Only PENDING or APPROVED leave requests can be withdrawn.");
         }
     }
+    public List<LeaveRequest> getAllLeaveRequests() {
+        return leaveRequestRepository.findAll();
+    }
 
+    public LeaveRequest getLeaveRequestById(Integer id) {
+        return leaveRequestRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Leave Request not found with ID: " + id));
+    }
+
+    public void deleteLeaveRequest(Integer id) {
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Leave Request not found with ID: " + id));
+        leaveRequestRepository.delete(leaveRequest);
+    }
 }

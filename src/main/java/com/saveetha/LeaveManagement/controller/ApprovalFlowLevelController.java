@@ -4,6 +4,7 @@ import com.saveetha.LeaveManagement.entity.ApprovalFlowLevel;
 import com.saveetha.LeaveManagement.service.ApprovalFlowLevelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,12 +24,14 @@ public class ApprovalFlowLevelController {
     }
 
     // Get approval flow levels by Approval Flow ID
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/flow/{flowId}")
     public ResponseEntity<List<ApprovalFlowLevel>> getApprovalFlowLevelsByFlowId(@PathVariable Integer flowId) {
         return ResponseEntity.ok(approvalFlowLevelService.getApprovalFlowLevelsByFlowId(flowId));
     }
 
     // Get a specific approval flow level by ID
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<ApprovalFlowLevel> getApprovalFlowLevelById(@PathVariable Integer id) {
         Optional<ApprovalFlowLevel> approvalFlowLevel = approvalFlowLevelService.getApprovalFlowLevelById(id);
@@ -36,15 +39,32 @@ public class ApprovalFlowLevelController {
     }
 
     // Create a new approval flow level
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping
     public ResponseEntity<ApprovalFlowLevel> createApprovalFlowLevel(@RequestBody ApprovalFlowLevel approvalFlowLevel) {
         return ResponseEntity.ok(approvalFlowLevelService.saveApprovalFlowLevel(approvalFlowLevel));
     }
 
-    // Delete an approval flow level
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteApprovalFlowLevel(@PathVariable Integer id) {
-        approvalFlowLevelService.deleteApprovalFlowLevel(id);
-        return ResponseEntity.noContent().build();
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<ApprovalFlowLevel> updateApprovalFlowLevel(@PathVariable Integer id,
+                                                                     @RequestBody ApprovalFlowLevel updatedLevel) {
+        ApprovalFlowLevel result = approvalFlowLevelService.updateApprovalFlowLevel(id, updatedLevel);
+        return ResponseEntity.ok(result);
     }
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PatchMapping("/activate/{id}")
+    public ResponseEntity<ApprovalFlowLevel> activateApprovalFlowLevel(@PathVariable Integer id) {
+        ApprovalFlowLevel updatedLevel = approvalFlowLevelService.setActiveStatus(id, true);
+        return ResponseEntity.ok(updatedLevel);
+    }
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PatchMapping("/deactivate/{id}")
+    public ResponseEntity<ApprovalFlowLevel> deactivateApprovalFlowLevel(@PathVariable Integer id) {
+        ApprovalFlowLevel updatedLevel = approvalFlowLevelService.setActiveStatus(id, false);
+        return ResponseEntity.ok(updatedLevel);
+    }
+
 }
+

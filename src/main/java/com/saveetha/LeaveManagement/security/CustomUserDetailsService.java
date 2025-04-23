@@ -2,6 +2,7 @@ package com.saveetha.LeaveManagement.security;
 
 import com.saveetha.LeaveManagement.entity.Employee;
 import com.saveetha.LeaveManagement.repository.EmployeeRepository;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -24,6 +25,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         Employee employee = employeeRepository.findByEmpId(empId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with empId: " + empId));
 
-        return new User(employee.getEmpId(), employee.getPassword(), Collections.emptyList());
+        String role = employee.getRole().name();
+        return new User(employee.getEmpId(), employee.getPassword(), Collections.singletonList(new SimpleGrantedAuthority(role)));
     }
 }

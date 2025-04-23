@@ -5,6 +5,7 @@ import com.saveetha.LeaveManagement.enums.ApprovalStatus;
 import com.saveetha.LeaveManagement.service.LeaveApprovalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -27,7 +28,15 @@ public class LeaveApprovalController {
             @PathVariable Integer approvalId,
             @RequestBody ApprovalRequestDTO approvalRequestDTOdto
     ) {
-        String result =leaveApprovalService.processApproval(approvalId, approvalRequestDTOdto.getStatus(), approvalRequestDTOdto.getReason());
+        String loggedInEmpId = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        String result = leaveApprovalService.processApproval(
+                approvalId,  // The ID of the approval record
+                approvalRequestDTOdto.getStatus(),  // The approval status (APPROVED, REJECTED)
+                approvalRequestDTOdto.getReason(),  // The reason for the approval or rejection
+                loggedInEmpId  // The employee ID of the logged-in approver
+        );
+
 
         return ResponseEntity.ok(result);
     }

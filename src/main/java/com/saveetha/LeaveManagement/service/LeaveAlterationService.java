@@ -5,6 +5,7 @@ import com.saveetha.LeaveManagement.entity.*;
 import com.saveetha.LeaveManagement.enums.*;
 import com.saveetha.LeaveManagement.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -69,12 +70,49 @@ public class LeaveAlterationService {
         if (alteration.getNotificationStatus() != NotificationStatus.PENDING) {
             throw new IllegalStateException("Alteration already processed.");
         }
+        String loggedInEmpId = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (!alteration.getReplacementEmployee().getEmpId().equals(loggedInEmpId)) {
+            throw new RuntimeException("Only the assigned replacement faculty can approve this alteration.");
+        }
 
         alteration.setNotificationStatus(NotificationStatus.APPROVED);
         leaveAlterationRepository.save(alteration);
 
         System.out.println("Alteration approved by replacement faculty (Emp ID: " +
                 alteration.getReplacementEmployee().getEmpId() + ")");
+    }
+    public void updateAlteration(Integer id, LeaveAlterationDto dto) {
+        LeaveAlteration alteration = leaveAlterationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Alteration not found"));
+
+        alteration.setClassDate(dto.getClassDate());
+        alteration.setClassPeriod(dto.getClassPeriod());
+        alteration.setSubjectName(dto.getSubjectName());
+        alteration.setSubjectCode(dto.getSubjectCode());
+
+        if (dto.getAlterationType() == AlterationType.MOODLE_LINK) {
+            alteration.setMoodleActivityLink(dto.getMoodleActivityLink());
+            alteration.setNotificationStatus(null);
+            alteration.setReplacementEmployee(null);
+        }
+
+        if (dto.getAlterationType() == AlterationType.STAFF_ALTERATION) {
+            Employee replacement = employeeRepository.findById(dto.getReplacementEmpId())
+                    .orElseThrow(() -> new RuntimeException("Replacement employee not found"));
+            alteration.setReplacementEmployee(replacement);
+            alteration.setNotificationStatus(NotificationStatus.PENDING);
+        }
+
+        alteration.setAlterationType(dto.getAlterationType());
+        leaveAlterationRepository.save(alteration);
+    }
+
+    public List<LeaveAlteration> getAllAlterations() {
+        return leaveAlterationRepository.findAll();
+    }
+    public LeaveAlteration getAlterationById(Integer id) {
+        return leaveAlterationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Alteration not found"));
     }
 
 }

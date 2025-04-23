@@ -15,7 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.Year;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -185,48 +187,135 @@ public class LeaveValidationService {
         LocalDate startDate = dto.getStartDate();
         LocalDate endDate = dto.getEndDate();
 
-        // Step 1: Get Casual Leave Type
+        // Step 1: Get CL type
         LeaveType clType = leaveTypeRepository.findByTypeNameIgnoreCase("CL")
-                .orElseThrow(() -> new RuntimeException("Casual Leave type not found"));
+                .orElseThrow(() -> new RuntimeException("CL leave type not found"));
         Integer clTypeId = clType.getLeaveTypeId();
 
-        // Step 2: Get academic cycle start date (e.g., May 26th to next May 25yh)
-        LocalDate academicYearStart = academicMonthCycleUtil.getAcademicYearStart();
+        // Step 2: Academic Year Start
+        LocalDate academicStart = academicMonthCycleUtil.getAcademicYearStart();
+        LocalDate now = LocalDate.now();
 
-        // Step 3: Calculate how many CLs earned until now in the academic year
-        long monthsSinceStart = ChronoUnit.MONTHS.between(
-                academicYearStart.withDayOfMonth(25),
-                LocalDate.now().withDayOfMonth(25)
-        ) + 1;
+        // Step 3: Build all academic month ranges from academicStart to now
+        List<MonthRange> academicMonths = buildAcademicMonthRanges(academicStart, now);
 
-        int totalEarnedCL = (int) monthsSinceStart;
+        // Step 4: Get employee joining date
+        Employee employee = employeeRepository.findByEmpId(empId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+        LocalDate joiningDate = employee.getJoiningDate();
 
-        // Step 4: Get number of used CLs (DRAFT, PENDING, APPROVED) in current academic year
-        List<LeaveRequest> usedCLs = leaveRequestRepository.findUsedCLsForEmployeeInAcademicYear(
-                empId,
-                clTypeId,
-                Arrays.asList(LeaveStatus.DRAFT, LeaveStatus.PENDING, LeaveStatus.APPROVED),
-                academicYearStart,
-                LocalDate.now()
-        );
+        // Step 5: For each academic month, check if CL was used. If not, it's available
+        int totalAvailableCL = 0;
 
-        if (usedCLs.size() >= totalEarnedCL) {
-            throw new RuntimeException("You have already used all your earned CLs for this academic year.");
+        for (MonthRange month : academicMonths) {
+            // 👇 Skip the joining month if employee joined after academic year started
+            if (joiningDate != null &&
+                    !joiningDate.isBefore(month.getStart()) &&
+                    !joiningDate.isAfter(month.getEnd())) {
+                continue;
+            }
+
+            boolean usedThisMonth = leaveRequestRepository.existsCLUsedInMonth(
+                    empId, clTypeId,
+                    Arrays.asList(LeaveStatus.DRAFT, LeaveStatus.PENDING, LeaveStatus.APPROVED),
+                    month.getStart(), month.getEnd()
+            );
+            if (!usedThisMonth) {
+                totalAvailableCL++;
+            }
         }
 
-        // Step 5: Prevent overlapping CL requests
-        List<LeaveRequest> overlappingRequests = leaveRequestRepository.findOverlappingLeaveRequestsByTypeId(
-                empId,
-                clTypeId,
+        // Step 6: Check total CL used so far
+        int usedCLs = leaveRequestRepository.countCLsUsed(
+                empId, clTypeId,
                 Arrays.asList(LeaveStatus.DRAFT, LeaveStatus.PENDING, LeaveStatus.APPROVED),
-                startDate,
-                endDate
+                academicStart, now
         );
 
+        int clRemaining = totalAvailableCL - usedCLs;
+        if (clRemaining <= 0) {
+            throw new RuntimeException("You have used all your available CLs.");
+        }
+
+        // Step 7: Prevent overlap
+        List<LeaveRequest> overlappingRequests = leaveRequestRepository.findOverlappingLeaveRequestsByTypeId(
+                empId, clTypeId,
+                Arrays.asList(LeaveStatus.DRAFT, LeaveStatus.PENDING, LeaveStatus.APPROVED),
+                startDate, endDate
+        );
         if (!overlappingRequests.isEmpty()) {
             throw new RuntimeException("A CL request already exists for the selected date range.");
         }
     }
+
+    public class MonthRange {
+        private LocalDate start;
+        private LocalDate end;
+
+        public MonthRange(LocalDate start, LocalDate end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        public LocalDate getStart() {
+            return start;
+        }
+
+        public LocalDate getEnd() {
+            return end;
+        }
+    }
+    private List<MonthRange> buildAcademicMonthRanges(LocalDate academicStart, LocalDate now) {
+        List<MonthRange> ranges = new ArrayList<>();
+
+        // Academic cycle is fixed: May 26 to May 25 of next year
+        int year = academicStart.getYear();
+        boolean isLeap = Year.of(year + 1).isLeap(); // Feb in next calendar year
+
+        LocalDate[] startDates = new LocalDate[]{
+                LocalDate.of(year, 5, 26),
+                LocalDate.of(year, 6, 25),
+                LocalDate.of(year, 7, 26),
+                LocalDate.of(year, 8, 26),
+                LocalDate.of(year, 9, 25),
+                LocalDate.of(year, 10, 26),
+                LocalDate.of(year, 11, 25),
+                LocalDate.of(year, 12, 26),
+                LocalDate.of(year + 1, 1, 26),
+                isLeap ? LocalDate.of(year + 1, 2, 24) : LocalDate.of(year + 1, 2, 23),
+                LocalDate.of(year + 1, 3, 26),
+                LocalDate.of(year + 1, 4, 25)
+        };
+
+        LocalDate[] endDates = new LocalDate[]{
+                LocalDate.of(year, 6, 24),
+                LocalDate.of(year, 7, 25),
+                LocalDate.of(year, 8, 25),
+                LocalDate.of(year, 9, 24),
+                LocalDate.of(year, 10, 25),
+                LocalDate.of(year, 11, 24),
+                LocalDate.of(year, 12, 25),
+                LocalDate.of(year + 1, 1, 25),
+                isLeap ? LocalDate.of(year + 1, 2, 23) : LocalDate.of(year + 1, 2, 22),
+                LocalDate.of(year + 1, 3, 25),
+                LocalDate.of(year + 1, 4, 24),
+                LocalDate.of(year + 1, 5, 25)
+        };
+
+        for (int i = 0; i < startDates.length; i++) {
+            LocalDate start = startDates[i];
+            LocalDate end = endDates[i];
+
+            if (start.isAfter(now)) break;
+            if (end.isAfter(now)) end = now;
+
+            ranges.add(new MonthRange(start, end));
+        }
+
+        return ranges;
+    }
+
+
 
     public void validatelop(LeaveRequestDTO leaveRequestDTO){
 
