@@ -1,6 +1,7 @@
 package com.saveetha.LeaveManagement.controller;
 
 import com.saveetha.LeaveManagement.dto.LoginRequest;
+import com.saveetha.LeaveManagement.dto.LoginResponse;
 import com.saveetha.LeaveManagement.dto.RegisterRequest;
 import com.saveetha.LeaveManagement.service.AuthenticationService;
 import org.springframework.http.HttpStatus;
@@ -36,7 +37,7 @@ public class AuthenticationController {
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
             String token = authService.login(request);
-            return ResponseEntity.ok(token);
+            return ResponseEntity.ok(new LoginResponse(token));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
