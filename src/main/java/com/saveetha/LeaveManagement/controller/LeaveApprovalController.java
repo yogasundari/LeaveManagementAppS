@@ -29,7 +29,7 @@ public class LeaveApprovalController {
             @RequestBody ApprovalRequestDTO approvalRequestDTOdto
     ) {
         String loggedInEmpId = SecurityContextHolder.getContext().getAuthentication().getName();
-
+System.out.println(loggedInEmpId);
         String result = leaveApprovalService.processApproval(
                 approvalId,  // The ID of the approval record
                 approvalRequestDTOdto.getStatus(),  // The approval status (APPROVED, REJECTED)
