@@ -19,8 +19,12 @@ public class RegisterRequest {
     @NotBlank
     private String empId;
 
-    @Email
-    @NotBlank
+	@NotBlank
+	@Email(message = "Invalid email format")
+	@Pattern(
+			regexp = "^[A-Za-z0-9._%+-]+@saveetha\\.ac\\.in$",
+			message = "Email must end with @saveetha.ac.in"
+	)
     private String email;
 
     @NotBlank

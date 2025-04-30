@@ -73,9 +73,15 @@ public class LeaveRequestService {
         leaveRequest.setReason(leaveRequestdto.getReason());
         leaveRequest.setEarnedDate(leaveRequestdto.getEarnedDate());
         leaveRequest.setFileUpload(leaveRequestdto.getFileUpload());
-        leaveRequest.setStatus(LeaveStatus.DRAFT); // <-- Important for draft
-
-        return leaveRequestRepository.save(leaveRequest);
+        if (leaveRequestdto.getHasClass() != null && leaveRequestdto.getHasClass()) {
+            leaveRequest.setStatus(LeaveStatus.DRAFT);
+            return leaveRequestRepository.save(leaveRequest);
+        } else {
+            leaveRequest.setStatus(LeaveStatus.PENDING);
+            LeaveRequest savedLeaveRequest = leaveRequestRepository.save(leaveRequest);
+            leaveApprovalService.initiateApprovalFlow(savedLeaveRequest.getRequestId());
+            return savedLeaveRequest;
+        }
     }
 
     public String submitLeaveRequest(Integer requestId) {

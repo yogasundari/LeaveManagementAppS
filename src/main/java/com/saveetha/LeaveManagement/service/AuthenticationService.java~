@@ -56,17 +56,21 @@ public class AuthenticationService {
         Employee employee = employeeRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
+        // Validate password
         if (!passwordEncoder.matches(request.getPassword(), employee.getPassword())) {
             throw new RuntimeException("Invalid credentials!");
         }
 
+        // Convert role to uppercase before mapping
+        Role role = Role.fromString(employee.getRole().toString());
+
+        // Update lastLogin timestamp
         employee.setLastLogin(new Timestamp(System.currentTimeMillis()));
         employeeRepository.save(employee);
 
-        String token = jwtUtil.generateToken(employee.getEmpId(), employee.getRole().toString());
-
-        return new LoginResponse(token, employee.getEmpId(), employee.getRole().toString());
+        // Generate token using EmpID
+        String token= jwtUtil.generateToken(employee.getEmpId(), employee.getRole().toString());
+        return new LoginResponse(token, employee.getEmpId(), employee.getRole().toString())
     }
-
 
 }

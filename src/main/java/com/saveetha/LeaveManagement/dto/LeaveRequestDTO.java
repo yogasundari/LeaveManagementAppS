@@ -9,6 +9,8 @@ import java.util.List;
 public class LeaveRequestDTO {
 
     private String empId;
+    private String email;
+    private String password;
     private Integer leaveTypeId;
     private LocalDate startDate;
     private LocalDate endDate;
@@ -17,6 +19,7 @@ public class LeaveRequestDTO {
     private String reason;
     private LocalDate earnedDate;
     private String fileUpload;
+    private Boolean hasClass;
     public String getEmpId() {
         return empId;
     }
@@ -88,6 +91,31 @@ public class LeaveRequestDTO {
     public void setFileUpload(String fileUpload) {
         this.fileUpload = fileUpload;
     }
+
+    public Boolean getHasClass() {
+        return hasClass;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setHasClass(Boolean hasClass) {
+        this.hasClass = hasClass;
+    }
+
     public static LeaveRequestDTO fromEntity(LeaveRequest leaveRequest) {
         LeaveRequestDTO dto = new LeaveRequestDTO();
         dto.setLeaveTypeId(leaveRequest.getLeaveType().getLeaveTypeId());  // Assuming LeaveRequest has a LeaveType entity with an ID
