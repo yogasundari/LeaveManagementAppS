@@ -27,7 +27,7 @@ public class LeaveAlterationController {
     // Step 2: Approve staff replacement by the replacement employee
     @PatchMapping("/approve/{id}")
     public ResponseEntity<String> approveAlteration(@PathVariable("id") Integer id) {
-        leaveAlterationService.approveAlteration(id);
+       leaveAlterationService.approveAlteration(id);
         return ResponseEntity.ok("Alteration approved successfully!");
     }
 

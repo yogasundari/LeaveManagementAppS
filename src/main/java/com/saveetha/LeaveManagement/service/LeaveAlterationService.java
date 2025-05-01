@@ -22,6 +22,10 @@ public class LeaveAlterationService {
     @Autowired
     private EmployeeRepository employeeRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
+
     public String assignAlteration(LeaveAlterationDto dto) {
         LeaveAlteration alteration = new LeaveAlteration();
 
@@ -50,7 +54,11 @@ public class LeaveAlterationService {
                     .orElseThrow(() -> new RuntimeException("Replacement Employee not found"));
 
             alteration.setReplacementEmployee(replacement);
+
             alteration.setNotificationStatus(NotificationStatus.PENDING); // Approval needed
+            String message = "You have been assigned to handle class alteration on " + dto.getClassDate()
+                    + " (Period: " + dto.getClassPeriod() + ", Subject: " + dto.getSubjectName() + ")";
+            notificationService.sendNotification(dto.getReplacementEmpId(), message);
         }
 
         alteration.setClassDate(dto.getClassDate());
@@ -58,9 +66,9 @@ public class LeaveAlterationService {
         alteration.setSubjectCode(dto.getSubjectCode());
         alteration.setSubjectName(dto.getSubjectName());
         System.out.println("Notification sent to replacement faculty (Emp ID: " + dto.getReplacementEmpId() + ")");
-        leaveAlterationRepository.save(alteration);
+        LeaveAlteration saved =leaveAlterationRepository.save(alteration);
 
-        return "Alteration created successfully!";
+        return "Alteration created successfully with ID: " + saved.getAlterationId();
     }
     public void approveAlteration(Integer alterationId) {
         LeaveAlteration alteration = leaveAlterationRepository.findById(alterationId)

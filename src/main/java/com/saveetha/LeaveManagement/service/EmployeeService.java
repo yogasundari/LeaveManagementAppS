@@ -124,7 +124,7 @@ public class EmployeeService {
         return employeeRepository.findByEmpId(empId);
     }
 
-    // ✅ Soft delete (set active = false)
+    // Soft delete (set active = false)
     public boolean deactivateEmployee(String empId) {
         Optional<Employee> optionalEmployee = employeeRepository.findByEmpId(empId);
         if (optionalEmployee.isPresent()) {
@@ -141,7 +141,7 @@ public class EmployeeService {
         return now.getYear() + "-" + (now.getYear() + 1); // Example: "2025-2026"
     }
 
-    // ✅ Reactivate (set active = true)
+    //  Reactivate (set active = true)
     public boolean activateEmployee(String empId) {
         Optional<Employee> optionalEmployee = employeeRepository.findByEmpId(empId);
         if (optionalEmployee.isPresent()) {
@@ -152,7 +152,7 @@ public class EmployeeService {
         }
         return false;
     }
-    // ✅ Optional: Hard delete (not recommended)
+    //  Optional: Hard delete (not recommended)
     public boolean deleteEmployee(String empId) {
         Optional<Employee> optionalEmployee = employeeRepository.findByEmpId(empId);
         if (optionalEmployee.isPresent()) {

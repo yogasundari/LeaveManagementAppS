@@ -98,7 +98,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.PUT, "/api/leave-alteration/update/{id}").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/leave-alteration/all").hasAuthority("ADMIN")
 
-
+						.requestMatchers(HttpMethod.GET, "/api/notifications").authenticated()
 						.requestMatchers(HttpMethod.GET, "/api/leave-approval/all").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.GET, "/api/leave-approval/{approvalId}").permitAll()
 						.requestMatchers(HttpMethod.DELETE, "/api/leave-approval/delete/{approvalId}").hasAuthority("ADMIN")

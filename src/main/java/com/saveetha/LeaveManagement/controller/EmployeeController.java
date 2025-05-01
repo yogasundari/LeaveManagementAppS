@@ -3,10 +3,16 @@ package com.saveetha.LeaveManagement.controller;
 import com.saveetha.LeaveManagement.dto.EmployeeUpdateDTO;
 import com.saveetha.LeaveManagement.entity.Employee;
 import com.saveetha.LeaveManagement.service.EmployeeService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 @RestController
@@ -28,6 +34,7 @@ public class EmployeeController {
 
         boolean isUpdated = employeeService.updateEmployee(empId, employeeUpdateDTO);
         if (isUpdated) {
+            System.out.println("Joining Date: " + employeeUpdateDTO.getJoiningDate());
             return ResponseEntity.ok("Employee updated successfully!");
         } else {
             return ResponseEntity.badRequest().body("Failed to update employee.");

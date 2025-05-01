@@ -1,5 +1,6 @@
 package com.saveetha.LeaveManagement.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -46,6 +47,7 @@ public class EmployeeUpdateDTO {
 
     private String designation;
     private Long departmentId;
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate joiningDate;
 
     public String getEmpName() {
