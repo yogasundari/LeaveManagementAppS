@@ -69,9 +69,6 @@ public class EmployeeService {
                 employee.setApprovalFlow(flow);
             }
 
-            if (employeeUpdateDTO.getProfilePicture() != null) {
-                employee.setProfilePicture(employeeUpdateDTO.getProfilePicture());
-            }
 
             if (employeeUpdateDTO.getStaffType() != null) {
                 try {
@@ -103,6 +100,13 @@ public class EmployeeService {
         }
 
         return false;
+    }
+    public void updateProfilePic(String empId, String imageUrl) {
+        Employee employee = employeeRepository.findByEmpId(empId)
+                .orElseThrow(() -> new RuntimeException("Employee not found with ID: " + empId));
+
+        employee.setProfilePicture(imageUrl);
+        employeeRepository.save(employee);
     }
     public String determineAcademicYear(LocalDate date) {
         int year = date.getYear();
