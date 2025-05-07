@@ -1,6 +1,8 @@
 package com.saveetha.LeaveManagement.controller;
 
 import com.saveetha.LeaveManagement.dto.ApprovalRequestDTO;
+import com.saveetha.LeaveManagement.dto.LeaveRequestSummaryDTO;
+import com.saveetha.LeaveManagement.entity.LeaveRequest;
 import com.saveetha.LeaveManagement.enums.ApprovalStatus;
 import com.saveetha.LeaveManagement.service.LeaveApprovalService;
 import lombok.RequiredArgsConstructor;
@@ -8,12 +10,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import com.saveetha.LeaveManagement.repository.LeaveApprovalRepository;
 @RestController
 @RequestMapping("/api/leave-approval")
 @RequiredArgsConstructor
 public class LeaveApprovalController {
 
+
     private final LeaveApprovalService leaveApprovalService;
+    private final LeaveApprovalRepository leaveApprovalRepository;
 
     // Call this after submitting the leave request
     @PostMapping("/initiate/{leaveRequestId}")
@@ -40,4 +48,28 @@ System.out.println(loggedInEmpId);
 
         return ResponseEntity.ok(result);
     }
+    // Fetch pending requests for the logged-in approver
+    @GetMapping("approver/pending-requests")
+    public ResponseEntity<List<LeaveRequestSummaryDTO>> getPendingRequests() {
+        String loggedInEmpId = SecurityContextHolder.getContext().getAuthentication().getName();
+        System.out.println("Fetching pending requests for: " + loggedInEmpId);
+
+        List<LeaveRequest> pendingRequests = leaveApprovalRepository.findPendingRequestsForApprover(loggedInEmpId);
+
+        List<LeaveRequestSummaryDTO> summaryList = pendingRequests.stream().map(request -> {
+            LeaveRequestSummaryDTO dto = new LeaveRequestSummaryDTO();
+            dto.setRequestId(request.getRequestId());
+            dto.setEmpId(request.getEmployee().getEmpId());
+            dto.setEmpName(request.getEmployee().getEmpName());
+            dto.setLeaveType(request.getLeaveType().getTypeName());
+            dto.setStartDate(request.getStartDate().toString());
+            dto.setEndDate(request.getEndDate().toString());
+            dto.setReason(request.getReason());
+            dto.setStatus(request.getStatus().name());
+            return dto;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(summaryList);
+    }
+
 }

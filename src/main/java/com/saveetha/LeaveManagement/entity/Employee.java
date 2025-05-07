@@ -1,5 +1,6 @@
 package com.saveetha.LeaveManagement.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.saveetha.LeaveManagement.enums.Role;
 import com.saveetha.LeaveManagement.enums.StaffType;
 import jakarta.persistence.*;
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 @Entity
 @NoArgsConstructor
 @Table(name = "employee")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Employee {
 
     @Id

@@ -1,5 +1,6 @@
 package com.saveetha.LeaveManagement.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.saveetha.LeaveManagement.enums.LeaveStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,6 +12,7 @@ import java.time.LocalTime;
 @Table(name = "LeaveRequest")
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class LeaveRequest {
 
     @Id
