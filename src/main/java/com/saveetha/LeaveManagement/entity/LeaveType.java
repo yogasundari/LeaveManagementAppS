@@ -18,7 +18,7 @@ public class LeaveType {
     @Column(nullable = false, length = 50)
     private String typeName;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Integer maxAllowedPerYear;
 
     @Column(nullable = true)

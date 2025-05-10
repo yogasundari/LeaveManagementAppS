@@ -17,6 +17,7 @@ public class LeaveRequestDTO {
     private LocalTime startTime;
     private LocalTime endTime;
     private String reason;
+    private boolean isHalfDay;
     private LocalDate earnedDate;
     private String fileUpload;
     private Boolean hasClass;
@@ -116,6 +117,14 @@ public class LeaveRequestDTO {
         this.hasClass = hasClass;
     }
 
+    public boolean isHalfDay() {
+        return isHalfDay;
+    }
+
+    public void setHalfDay(boolean halfDay) {
+        isHalfDay = halfDay;
+    }
+
     public static LeaveRequestDTO fromEntity(LeaveRequest leaveRequest) {
         LeaveRequestDTO dto = new LeaveRequestDTO();
         dto.setLeaveTypeId(leaveRequest.getLeaveType().getLeaveTypeId());  // Assuming LeaveRequest has a LeaveType entity with an ID
@@ -126,6 +135,7 @@ public class LeaveRequestDTO {
         dto.setReason(leaveRequest.getReason());
         dto.setEarnedDate(leaveRequest.getEarnedDate());
         dto.setFileUpload(leaveRequest.getFileUpload());
+        dto.setHalfDay(leaveRequest.isHalfDay());
         // If class periods are not directly stored in the entity, we can remove this or handle it separately
         return dto;
     }

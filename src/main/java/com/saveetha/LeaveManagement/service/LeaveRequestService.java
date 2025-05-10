@@ -12,6 +12,8 @@ import com.saveetha.LeaveManagement.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -73,6 +75,13 @@ public class LeaveRequestService {
         leaveRequest.setReason(leaveRequestdto.getReason());
         leaveRequest.setEarnedDate(leaveRequestdto.getEarnedDate());
         leaveRequest.setFileUpload(leaveRequestdto.getFileUpload());
+
+        // Set the half-day flag to true or false based on the dto
+        leaveRequest.setHalfDay(leaveRequestdto.isHalfDay()); // This will pass a boolean value (true or false)
+
+        double numberOfDays =calculateLeaveDays(leaveRequestdto.getStartDate(), leaveRequestdto.getEndDate(), leaveRequestdto.isHalfDay());
+        leaveRequest.setNumberOfDays(numberOfDays);
+
         if (leaveRequestdto.getHasClass() != null && leaveRequestdto.getHasClass()) {
             leaveRequest.setStatus(LeaveStatus.DRAFT);
             return leaveRequestRepository.save(leaveRequest);
@@ -82,6 +91,14 @@ public class LeaveRequestService {
             leaveApprovalService.initiateApprovalFlow(savedLeaveRequest.getRequestId());
             return savedLeaveRequest;
         }
+
+    }
+    private double calculateLeaveDays(LocalDate startDate, LocalDate endDate, boolean isHalfDay) {
+        if (startDate.equals(endDate)) {
+            return isHalfDay ? 0.5 : 1.0;  // If it's a single day leave, return 0.5 for half-day and 1.0 for full-day.
+        }
+        long totalDays = ChronoUnit.DAYS.between(startDate, endDate) + 1;
+        return isHalfDay ? totalDays * 0.5 : totalDays;  // For half-day, return 0.5 of the total days.
     }
 
     public String submitLeaveRequest(Integer requestId) {

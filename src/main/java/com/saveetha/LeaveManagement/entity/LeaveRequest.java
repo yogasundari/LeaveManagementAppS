@@ -34,6 +34,8 @@ public class LeaveRequest {
     @Column(nullable = false)
     private LocalDate endDate;
 
+    @Column(name = "number_of_days")
+    private double numberOfDays;
 
     private LocalTime startTime;
     private LocalTime endTime;
@@ -53,7 +55,7 @@ public class LeaveRequest {
 
     @Column(nullable = false)
     private Boolean active = true;
-
+    private boolean halfDay;
     @Getter
     private LocalDateTime createdAt;
     @Getter
@@ -170,6 +172,22 @@ public class LeaveRequest {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public double getNumberOfDays() {
+        return numberOfDays;
+    }
+
+    public void setNumberOfDays(double numberOfDays) {
+        this.numberOfDays = numberOfDays;
+    }
+
+    public boolean isHalfDay() {
+        return halfDay;
+    }
+
+    public void setHalfDay(boolean halfDay) {
+        this.halfDay = halfDay;
     }
 
     public void setUpdatedAt(LocalDateTime updatedAt) {

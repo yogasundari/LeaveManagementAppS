@@ -11,7 +11,7 @@ import com.saveetha.LeaveManagement.repository.EmployeeRepository;
 import com.saveetha.LeaveManagement.repository.LeaveRequestRepository;
 import com.saveetha.LeaveManagement.repository.LeaveTypeRepository;
 import com.saveetha.LeaveManagement.utility.AcademicMonthCycleUtil;
-import org.springframework.http.ResponseEntity;
+import com.saveetha.LeaveManagement.utility.MonthRange;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -186,58 +186,57 @@ public class LeaveValidationService {
         String empId = dto.getEmpId();
         LocalDate startDate = dto.getStartDate();
         LocalDate endDate = dto.getEndDate();
+        boolean isHalfDay = dto.isHalfDay();
 
-        // Step 1: Get CL type
+        // Step 1: Get CL leave type ID
         LeaveType clType = leaveTypeRepository.findByTypeNameIgnoreCase("CL")
                 .orElseThrow(() -> new RuntimeException("CL leave type not found"));
         Integer clTypeId = clType.getLeaveTypeId();
 
-        // Step 2: Academic Year Start
+        // Step 2: Academic year start
         LocalDate academicStart = academicMonthCycleUtil.getAcademicYearStart();
-        LocalDate now = LocalDate.now();
+        LocalDate today = LocalDate.now();
 
-        // Step 3: Build all academic month ranges from academicStart to now
-        List<MonthRange> academicMonths = buildAcademicMonthRanges(academicStart, now);
+        // Step 3: Build academic month ranges
+        List<MonthRange> academicMonths = buildAcademicMonthRanges(academicStart, today);
 
         // Step 4: Get employee joining date
         Employee employee = employeeRepository.findByEmpId(empId)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
         LocalDate joiningDate = employee.getJoiningDate();
 
-        // Step 5: For each academic month, check if CL was used. If not, it's available
-        int totalAvailableCL = 0;
-
+        // Step 5: Count completed academic months (excluding joining month)
+        int completedMonths = 0;
         for (MonthRange month : academicMonths) {
-            // 👇 Skip the joining month if employee joined after academic year started
-            if (joiningDate != null &&
-                    !joiningDate.isBefore(month.getStart()) &&
-                    !joiningDate.isAfter(month.getEnd())) {
-                continue;
-            }
-
-            boolean usedThisMonth = leaveRequestRepository.existsCLUsedInMonth(
-                    empId, clTypeId,
-                    Arrays.asList(LeaveStatus.DRAFT, LeaveStatus.PENDING, LeaveStatus.APPROVED),
-                    month.getStart(), month.getEnd()
-            );
-            if (!usedThisMonth) {
-                totalAvailableCL++;
+            if (!month.getStart().isAfter(today)) {
+                // Skip joining month
+                if (joiningDate != null &&
+                        !joiningDate.isBefore(month.getStart()) &&
+                        !joiningDate.isAfter(month.getEnd())) {
+                    continue;
+                }
+                completedMonths++;
             }
         }
 
-        // Step 6: Check total CL used so far
-        int usedCLs = leaveRequestRepository.countCLsUsed(
-                empId, clTypeId,
+        // Step 6: Count CLs already used (as decimal values)
+        double clUsed = leaveRequestRepository.countTotalCLsUsed(
+                empId,
+                clTypeId,
                 Arrays.asList(LeaveStatus.DRAFT, LeaveStatus.PENDING, LeaveStatus.APPROVED),
-                academicStart, now
+                academicStart,
+                today
         );
 
-        int clRemaining = totalAvailableCL - usedCLs;
-        if (clRemaining <= 0) {
-            throw new RuntimeException("You have used all your available CLs.");
+        // Step 7: Calculate requested CL days
+        double requestedCLDays =calculateLeaveDays(startDate, endDate, isHalfDay);
+
+        // Step 8: Validate against available CLs
+        if (clUsed + requestedCLDays > completedMonths) {
+            throw new RuntimeException("CL limit exceeded. You have " + completedMonths + " CL(s) available, used " + clUsed + ", trying to use " + requestedCLDays + ".");
         }
 
-        // Step 7: Prevent overlap
+        // Step 9: Prevent overlapping CLs
         List<LeaveRequest> overlappingRequests = leaveRequestRepository.findOverlappingLeaveRequestsByTypeId(
                 empId, clTypeId,
                 Arrays.asList(LeaveStatus.DRAFT, LeaveStatus.PENDING, LeaveStatus.APPROVED),
@@ -248,23 +247,14 @@ public class LeaveValidationService {
         }
     }
 
-    public class MonthRange {
-        private LocalDate start;
-        private LocalDate end;
-
-        public MonthRange(LocalDate start, LocalDate end) {
-            this.start = start;
-            this.end = end;
+    private double calculateLeaveDays(LocalDate startDate, LocalDate endDate, boolean isHalfDay) {
+        if (startDate.equals(endDate)) {
+            return isHalfDay ? 0.5 : 1.0;  // If it's a single day leave, return 0.5 for half-day and 1.0 for full-day.
         }
-
-        public LocalDate getStart() {
-            return start;
-        }
-
-        public LocalDate getEnd() {
-            return end;
-        }
+        long totalDays = ChronoUnit.DAYS.between(startDate, endDate) + 1;
+        return isHalfDay ? totalDays * 0.5 : totalDays;  // For half-day, return 0.5 of the total days.
     }
+
     private List<MonthRange> buildAcademicMonthRanges(LocalDate academicStart, LocalDate now) {
         List<MonthRange> ranges = new ArrayList<>();
 
@@ -309,7 +299,7 @@ public class LeaveValidationService {
             if (start.isAfter(now)) break;
             if (end.isAfter(now)) end = now;
 
-            ranges.add(new MonthRange(start, end));
+            ranges.add(new MonthRange(start, end,now));
         }
 
         return ranges;

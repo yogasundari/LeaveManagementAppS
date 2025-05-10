@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Integer> {
@@ -67,18 +68,46 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Inte
             @Param("statuses") List<LeaveStatus> statuses,
             @Param("earnedDate") LocalDate earnedDate);
 
-    @Query("SELECT COUNT(l) > 0 FROM LeaveRequest l WHERE l.employee.empId = :empId AND l.leaveType.leaveTypeId = :leaveTypeId AND l.status IN :statuses AND l.startDate BETWEEN :startDate AND :endDate")
-    boolean existsCLUsedInMonth(@Param("empId") String empId,
-                                @Param("leaveTypeId") Integer leaveTypeId,
-                                @Param("statuses") List<LeaveStatus> statuses,
-                                @Param("startDate") LocalDate startDate,
-                                @Param("endDate") LocalDate endDate);
-    @Query("SELECT COUNT(l) FROM LeaveRequest l WHERE l.employee.empId = :empId AND l.leaveType.leaveTypeId = :leaveTypeId AND l.status IN :statuses AND l.startDate BETWEEN :startDate AND :endDate")
-    int countCLsUsed(@Param("empId") String empId,
-                     @Param("leaveTypeId") Integer leaveTypeId,
-                     @Param("statuses") List<LeaveStatus> statuses,
-                     @Param("startDate") LocalDate startDate,
-                     @Param("endDate") LocalDate endDate);
+    @Query("SELECT COALESCE(SUM(lr.numberOfDays), 0) FROM LeaveRequest lr " +
+            "WHERE lr.employee.empId = :empId " +
+            "AND lr.leaveType.leaveTypeId = :leaveTypeId " +
+            "AND lr.status IN :statuses " +
+            "AND lr.startDate >= :academicStart " +
+            "AND lr.startDate <= :currentDate")
+    double countTotalCLsUsed(
+            @Param("empId") String empId,
+            @Param("leaveTypeId") Integer leaveTypeId,
+            @Param("statuses") List<LeaveStatus> statuses,
+            @Param("academicStart") LocalDate academicStart,
+            @Param("currentDate") LocalDate currentDate
+    );
+    @Query("SELECT COUNT(lr) FROM LeaveRequest lr " +
+            "WHERE lr.employee.empId = :empId " +
+            "AND lr.leaveType.leaveTypeId = :leaveTypeId " +
+            "AND lr.status IN :statuses " +
+            "AND lr.startDate BETWEEN :startDate AND :endDate")
+    int countPermissionLeavesInMonth(
+            @Param("empId") String empId,
+            @Param("leaveTypeId") Integer leaveTypeId,
+            @Param("statuses") List<LeaveStatus> statuses,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    @Query("SELECT CASE WHEN COUNT(lr) > 0 THEN true ELSE false END FROM LeaveRequest lr " +
+            "WHERE lr.employee.empId = :empId " +
+            "AND lr.leaveType.leaveTypeId = :leaveTypeId " +
+            "AND lr.status IN :statuses " +
+            "AND lr.startDate = :date " +
+            "AND ((lr.startTime <= :endTime AND lr.endTime >= :startTime))")
+    boolean existsOverlappingPermission(
+            @Param("empId") String empId,
+            @Param("leaveTypeId") Integer leaveTypeId,
+            @Param("date") LocalDate date,
+            @Param("startTime") LocalTime startTime,
+            @Param("endTime") LocalTime endTime,
+            @Param("statuses") List<LeaveStatus> statuses
+    );
 
 
 }

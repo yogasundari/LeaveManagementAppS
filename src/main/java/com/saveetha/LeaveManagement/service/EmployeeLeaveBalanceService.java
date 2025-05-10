@@ -27,16 +27,15 @@ public class EmployeeLeaveBalanceService {
         EmployeeLeaveBalance balance = employeeLeaveBalanceRepository
                 .findByEmployeeAndLeaveType(employee, leaveType)
                 .orElseThrow(() -> new RuntimeException("Leave balance not found."));
+        double totalDays = leaveRequest.getNumberOfDays();
 
-        long totalDays = ChronoUnit.DAYS.between(leaveRequest.getStartDate(), leaveRequest.getEndDate()) + 1;
 
         if (balance.getBalanceLeave() < totalDays) {
             throw new RuntimeException("Insufficient leave balance. Required: " + totalDays +
                     ", Available: " + balance.getBalanceLeave());
         }
-
-        balance.setBalanceLeave(balance.getBalanceLeave() - (int) totalDays);
-        balance.setUsedLeaves(balance.getUsedLeaves() + (int) totalDays);
+        balance.setBalanceLeave(balance.getBalanceLeave() - totalDays);
+        balance.setUsedLeaves(balance.getUsedLeaves() + totalDays);
 
         employeeLeaveBalanceRepository.save(balance);
     }

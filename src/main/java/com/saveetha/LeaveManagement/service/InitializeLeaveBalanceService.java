@@ -3,15 +3,18 @@ package com.saveetha.LeaveManagement.service;
 import com.saveetha.LeaveManagement.entity.Employee;
 import com.saveetha.LeaveManagement.entity.EmployeeLeaveBalance;
 import com.saveetha.LeaveManagement.entity.LeaveType;
+import com.saveetha.LeaveManagement.utility.MonthRange;
 import com.saveetha.LeaveManagement.repository.EmployeeLeaveBalanceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.Year;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class InitializeLeaveBalanceService { // before academic year start , based on joining date , ml and el should be activate after 15 months , but cl will be earned 1 per month asusual , but joingi after the academic year , the first month cl can't be taken , they can take leave for remaing month
+public class InitializeLeaveBalanceService {
 
     @Autowired
     private final EmployeeLeaveBalanceRepository balanceRepository;
@@ -25,114 +28,121 @@ public class InitializeLeaveBalanceService { // before academic year start , bas
         LocalDate today = LocalDate.now();
 
         for (LeaveType leaveType : leaveTypes) {
-            double proratedLeave = 0.0;
-
+            double balance = 0.0;
+            String typeName = leaveType.getTypeName().toUpperCase();
             LocalDate academicStart = leaveType.getAcademicYearStart();
             LocalDate academicEnd = leaveType.getAcademicYearEnd();
 
-            // Skip if joined after academic year ends
-            if (joiningDate != null && joiningDate.isAfter(academicEnd)) continue;
+            if (joiningDate == null || joiningDate.isAfter(academicEnd)) continue;
 
-            String typeName = leaveType.getTypeName().toUpperCase();
+            List<MonthRange> academicMonths = buildAcademicMonthRanges(academicStart, today);
 
-            if (joiningDate != null) {
-                if (joiningDate.isBefore(academicStart)) {
-                    // Joined before academic year: full allocation
-                    proratedLeave = leaveType.getMaxAllowedPerYear();
-                } else {
-                    // Joined after academic year started: prorated
-                    int monthsRemaining = monthsBetween(joiningDate, academicEnd);
-                    monthsRemaining = Math.min(monthsRemaining, 12); // Cap at 12 months
+            if (joiningDate.isBefore(academicStart)) {
+                // Joined before academic year
+                switch (typeName) {
+                    case "CL": balance = 12; break;
+                    case "PERMISSION":
+                    case "LATE": balance = 24; break;
+                    case "ML": balance = today.isAfter(joiningDate.plusMonths(15)) ? 6 : 0; break;
+                    case "EL": balance = today.isAfter(joiningDate.plusMonths(15)) ? 12 : 0; break;
+                    default: balance = leaveType.getMaxAllowedPerYear(); break;
+                }
+            } else {
+                int completedAcademicMonths = getCompletedAcademicMonths(joiningDate, academicMonths);
 
-                    switch (typeName) {
-                        case "CL":
-                            // Casual Leave: 1 CL per month, prorated based on remaining months in the year
-                            proratedLeave = calculateCLMonths(joiningDate, academicStart, academicEnd); // Dynamic CL calculation
-                            break;
-                        case "PERMISSION":
-                        case "LATE":
-                            // Permission and Late Leave: 2 per month, prorated
-                            proratedLeave = Math.min(monthsRemaining * 2, 24); // Max 24 days allowed for the year
-                            break;
-                        case "ML":
-                        case "EL":
-                            // Medical and Earned Leave: Allowed after 1 year 3 months
-                            LocalDate eligibleDate = joiningDate.plusMonths(15);
-                            proratedLeave = today.isAfter(eligibleDate) ? leaveType.getMaxAllowedPerYear() : 0.0;
-                            break;
-                        default:
-                            // All others: full year allocation
-                            proratedLeave = leaveType.getMaxAllowedPerYear();
-                            break;
-                    }
+                switch (typeName) {
+                    case "CL":
+                        balance = Math.max(12 - (completedAcademicMonths - 1), 0);
+                        break;
+                    case "PERMISSION":
+                    case "LATE":
+                        balance = Math.max(24 - (completedAcademicMonths * 2), 0);
+                        break;
+                    case "ML":
+                        balance = today.isAfter(joiningDate.plusMonths(15)) ? 6 : 0;
+                        break;
+                    case "EL":
+                        balance = today.isAfter(joiningDate.plusMonths(15)) ? 12 : 0;
+                        break;
+                    default:
+                        balance = leaveType.getMaxAllowedPerYear();
+                        break;
                 }
             }
 
-            final double finalLeave = proratedLeave;
-
-            EmployeeLeaveBalance balance = balanceRepository
+            final double finalBalance = balance;
+            EmployeeLeaveBalance leaveBalance = balanceRepository
                     .findByEmployeeAndLeaveType(employee, leaveType)
-                    .orElseGet(() -> new EmployeeLeaveBalance(employee, leaveType, academicYear, finalLeave));
+                    .orElseGet(() -> new EmployeeLeaveBalance(employee, leaveType, academicYear, finalBalance));
 
-            balance.setUsedLeaves(0.0);
-            balance.setCarryForwardLeave(0.0);
-            balance.setCurrentYear(academicYear);
-            balance.setBalanceLeave(finalLeave);
+            leaveBalance.setUsedLeaves(0.0);
+            leaveBalance.setCarryForwardLeave(0.0);
+            leaveBalance.setCurrentYear(academicYear);
+            leaveBalance.setBalanceLeave(finalBalance);
 
-            balanceRepository.save(balance);
+            balanceRepository.save(leaveBalance);
 
-            // Debugging info
-            System.out.println("Initialized " + typeName + " for " + employee.getEmpId() + ": " + finalLeave);
+            System.out.println("Initialized " + typeName + " for " + employee.getEmpId() + ": " + finalBalance);
         }
 
-        System.out.println("✅ Leave balance initialized for employee: " + employee.getEmpId());
+        System.out.println("✅Leave balance initialized for employee: " + employee.getEmpId());
     }
 
-    // Helper method to calculate months between two date
-    private int monthsBetween(LocalDate joiningDate, LocalDate academicEnd) {
-        if (joiningDate.isAfter(academicEnd)) return 0;
-
-        // CL calculation should start from the next full month
-        LocalDate startMonth = joiningDate.plusMonths(1).withDayOfMonth(1); // Start from the next full month
-        LocalDate endMonth = academicEnd.withDayOfMonth(1);  // End month (academic year end)
-
-        // If startMonth is after endMonth, no months available
-        if (startMonth.isAfter(endMonth)) {
-            return 0;
+    private int getCompletedAcademicMonths(LocalDate joiningDate, List<MonthRange> academicMonths) {
+        int completed = 0;
+        for (MonthRange range : academicMonths) {
+            if (!joiningDate.isAfter(range.getEnd())) {
+                completed++;
+            }
         }
-
-        // Calculate the difference in years and months
-        int yearDiff = endMonth.getYear() - startMonth.getYear();
-        int monthDiff = endMonth.getMonthValue() - startMonth.getMonthValue();
-
-        // Return total months between the two dates
-        return yearDiff * 12 + monthDiff;
+        return completed;
     }
 
+    private List<MonthRange> buildAcademicMonthRanges(LocalDate academicStart, LocalDate now) {
+        List<MonthRange> ranges = new ArrayList<>();
+        int year = academicStart.getYear();
+        boolean isLeap = Year.of(year + 1).isLeap();
 
-    // Custom logic for calculating Casual Leave months based on joining date and academic year
-    private int calculateCLMonths(LocalDate joiningDate, LocalDate academicStart, LocalDate academicEnd) {
-        // If the employee joins after the academic year ends, no CLs for that year
-        if (joiningDate.isAfter(academicEnd)) return 0;
+        LocalDate[] startDates = new LocalDate[]{
+                LocalDate.of(year, 5, 26),
+                LocalDate.of(year, 6, 25),
+                LocalDate.of(year, 7, 26),
+                LocalDate.of(year, 8, 26),
+                LocalDate.of(year, 9, 25),
+                LocalDate.of(year, 10, 26),
+                LocalDate.of(year, 11, 25),
+                LocalDate.of(year, 12, 26),
+                LocalDate.of(year + 1, 1, 26),
+                isLeap ? LocalDate.of(year + 1, 2, 24) : LocalDate.of(year + 1, 2, 23),
+                LocalDate.of(year + 1, 3, 26),
+                LocalDate.of(year + 1, 4, 25)
+        };
 
-        // If the employee joins before the academic year start (May 26), they get full CLs
-        if (joiningDate.isBefore(academicStart)) {
-            return 11; // Full year of CL
+        LocalDate[] endDates = new LocalDate[]{
+                LocalDate.of(year, 6, 24),
+                LocalDate.of(year, 7, 25),
+                LocalDate.of(year, 8, 25),
+                LocalDate.of(year, 9, 24),
+                LocalDate.of(year, 10, 25),
+                LocalDate.of(year, 11, 24),
+                LocalDate.of(year, 12, 25),
+                LocalDate.of(year + 1, 1, 25),
+                isLeap ? LocalDate.of(year + 1, 2, 23) : LocalDate.of(year + 1, 2, 22),
+                LocalDate.of(year + 1, 3, 25),
+                LocalDate.of(year + 1, 4, 24),
+                LocalDate.of(year + 1, 5, 25)
+        };
+
+        for (int i = 0; i < startDates.length; i++) {
+            LocalDate start = startDates[i];
+            LocalDate end = endDates[i];
+
+            if (start.isAfter(now)) break;
+            if (end.isAfter(now)) end = now;
+
+            ranges.add(new MonthRange(start, end, now));
         }
 
-        // CL calculation starts from the next full month after joining
-        LocalDate startMonth = joiningDate.plusMonths(1).withDayOfMonth(1); // Start from next full month
-        LocalDate endMonth = academicEnd.withDayOfMonth(1);  // End of academic year month
-
-        // Calculate the months from the next full month
-        int monthsRemaining = monthsBetween(startMonth, endMonth);
-
-        // Adjust if they join after May 25, 2024 (they will get 0 CL for this academic year)
-        if (joiningDate.getMonthValue() == 5 && joiningDate.getDayOfMonth() > 25) {
-            return 0;  // No CL if joined after May 25
-        }
-
-        return monthsRemaining;  // Number of months the employee is eligible for CL
+        return ranges;
     }
-
 }
