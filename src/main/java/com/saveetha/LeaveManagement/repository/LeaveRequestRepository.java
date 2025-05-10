@@ -81,33 +81,26 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Inte
             @Param("academicStart") LocalDate academicStart,
             @Param("currentDate") LocalDate currentDate
     );
-    @Query("SELECT COUNT(lr) FROM LeaveRequest lr " +
-            "WHERE lr.employee.empId = :empId " +
-            "AND lr.leaveType.leaveTypeId = :leaveTypeId " +
-            "AND lr.status IN :statuses " +
-            "AND lr.startDate BETWEEN :startDate AND :endDate")
-    int countPermissionLeavesInMonth(
-            @Param("empId") String empId,
-            @Param("leaveTypeId") Integer leaveTypeId,
-            @Param("statuses") List<LeaveStatus> statuses,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate
-    );
-
-    @Query("SELECT CASE WHEN COUNT(lr) > 0 THEN true ELSE false END FROM LeaveRequest lr " +
-            "WHERE lr.employee.empId = :empId " +
-            "AND lr.leaveType.leaveTypeId = :leaveTypeId " +
-            "AND lr.status IN :statuses " +
-            "AND lr.startDate = :date " +
-            "AND ((lr.startTime <= :endTime AND lr.endTime >= :startTime))")
-    boolean existsOverlappingPermission(
-            @Param("empId") String empId,
-            @Param("leaveTypeId") Integer leaveTypeId,
-            @Param("date") LocalDate date,
-            @Param("startTime") LocalTime startTime,
-            @Param("endTime") LocalTime endTime,
-            @Param("statuses") List<LeaveStatus> statuses
-    );
-
-
+    @Query(value = """
+        SELECT 
+            lr.request_id,
+            lt.type_name AS leave_type,
+            lr.start_date,
+            lr.end_date,
+            lr.status,
+            lr.reason,
+            lr.created_at
+        FROM 
+            leave_request lr
+        JOIN 
+            leave_type lt ON lr.leave_type_id = lt.leave_type_id
+        WHERE 
+            lr.emp_id = :empId AND lr.active = true
+        ORDER BY 
+            lr.created_at DESC
+        """, nativeQuery = true)
+    List<Object[]> getLeaveHistoryForEmployee(@Param("empId") String empId);
 }
+
+
+

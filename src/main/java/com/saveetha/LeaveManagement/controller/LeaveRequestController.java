@@ -1,11 +1,14 @@
 package com.saveetha.LeaveManagement.controller;
 
+import com.saveetha.LeaveManagement.dto.LeaveHistoryDTO;
 import com.saveetha.LeaveManagement.dto.LeaveRequestDTO;
 import com.saveetha.LeaveManagement.entity.LeaveRequest;
 import com.saveetha.LeaveManagement.service.LeaveRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/leave-request")
@@ -30,5 +33,10 @@ public class LeaveRequestController {
         String response = leaveRequestService.withdrawLeaveRequest(requestId);
         return ResponseEntity.ok(response);
     }
+    @GetMapping("/leave-history")
+    public ResponseEntity<List<LeaveHistoryDTO>> getLeaveHistory() {
+        return ResponseEntity.ok(leaveRequestService.getLeaveHistoryForCurrentUser());
+    }
+
 
 }

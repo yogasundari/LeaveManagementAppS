@@ -45,7 +45,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.GET, "/api/departments/**").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/departments/**").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.GET, "/api/departments/active/**").hasAuthority("ADMIN")
-						.requestMatchers(HttpMethod.POST, "/api/departments/**").hasAuthority("ADMIN")
+						.requestMatchers(HttpMethod.POST, "/api/departments/create").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.PUT, "/api/departments/update/**").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.DELETE, "/api/departments/delete/**").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.PATCH, "/api/departments/{id}/**").hasAuthority("ADMIN")
@@ -89,6 +89,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.PATCH, "/api/leave-request/**").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/leave-request/all").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.GET, "/api/leave-request/{id}").permitAll()
+						.requestMatchers(HttpMethod.GET, "/api/leave-request/leave-history").authenticated()
 						.requestMatchers(HttpMethod.DELETE, "/api/leave-request/{id}").hasAuthority("ADMIN")
 
 						.requestMatchers(HttpMethod.POST, "/api/leave-alteration/**").permitAll()
