@@ -11,8 +11,10 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Integer> {
+    Optional<LeaveRequest> findTopByEmpIdOrderByStartDateDesc();
 
     // Get all leave requests by employee
     List<LeaveRequest> findByEmployeeEmpId(String empId);

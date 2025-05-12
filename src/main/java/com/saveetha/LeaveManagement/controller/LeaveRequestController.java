@@ -2,10 +2,16 @@ package com.saveetha.LeaveManagement.controller;
 
 import com.saveetha.LeaveManagement.dto.LeaveRequestDTO;
 import com.saveetha.LeaveManagement.entity.LeaveRequest;
+import com.saveetha.LeaveManagement.service.CloudinaryService;
 import com.saveetha.LeaveManagement.service.LeaveRequestService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/leave-request")
@@ -13,7 +19,8 @@ import org.springframework.web.bind.annotation.*;
 public class LeaveRequestController {
 
     private final LeaveRequestService leaveRequestService;
-
+    @Autowired
+    private CloudinaryService cloudinaryService;
     @PostMapping("/create-draft")
     public ResponseEntity<?> createDraft(@RequestBody LeaveRequestDTO leaveRequestdto) {
         LeaveRequest saved = leaveRequestService.createDraftLeaveRequest(leaveRequestdto);
@@ -29,6 +36,19 @@ public class LeaveRequestController {
     public ResponseEntity<String> withdrawLeaveRequest(@PathVariable Integer requestId) {
         String response = leaveRequestService.withdrawLeaveRequest(requestId);
         return ResponseEntity.ok(response);
+    }
+    @PostMapping("/upload-medical-certificate/{empId}")
+    public ResponseEntity<String> uploadMedicalCertificate(
+            @PathVariable String empId,
+            @RequestParam("file") MultipartFile file) {
+        try {
+            String fileUrl = cloudinaryService.uploadDocument(file); // Generic upload method
+            leaveRequestService.attachMedicalCertificate(empId, fileUrl); // Save URL in DB
+            return ResponseEntity.ok(fileUrl);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("File upload failed.");
+        }
     }
 
 }
