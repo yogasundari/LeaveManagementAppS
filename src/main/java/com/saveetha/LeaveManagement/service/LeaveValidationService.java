@@ -39,8 +39,64 @@ public class LeaveValidationService {
     }
 
     public void validatePermissionLeave(LeaveRequestDTO leaveRequestdto) {
+        // Step 2: Academic year start
+        LocalDate academicStart = academicMonthCycleUtil.getAcademicYearStart();
+        LocalDate today = LocalDate.now();
+        // — Step 1: Must be a one-day request
+        if (!leaveRequestdto.getStartDate().equals(leaveRequestdto.getEndDate())) {
+            throw new RuntimeException("Permission Leave must be for exactly one day.");
+        }
+        LocalDate day = leaveRequestdto.getStartDate();
 
+        // — Step 2: Load Employee
+        Employee emp = employeeRepository.findByEmpId(leaveRequestdto.getEmpId())
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        // — Step 3: Load Permission LeaveType
+        LeaveType permType = leaveTypeRepository.findByTypeNameIgnoreCase("permission")
+                .orElseThrow(() -> new RuntimeException("Permission Leave type not found"));
+
+        // — Step 4: Load Leave Balance
+        EmployeeLeaveBalance bal = employeeLeaveBalanceRepository
+                .findByEmployeeAndLeaveType(emp, permType)
+                .orElseThrow(() -> new RuntimeException("Permission Leave balance not found"));
+
+        if (bal.getBalanceLeave() <= 0) {
+            throw new RuntimeException("You have no remaining Permission Leave balance.");
+        }
+
+        // — Step 5: Check overlapping leaves
+        boolean hasOverlap = leaveRequestRepository.existsByEmployeeAndDate(emp.getEmpId(), day);
+        if (hasOverlap) {
+            throw new RuntimeException("You already have a leave on " + day);
+        }
+
+        // — Step 6: Find current academic-month
+        List<MonthRange> ranges = buildAcademicMonthRanges(academicStart, LocalDate.now());
+        MonthRange currentMonth = ranges.stream()
+                .filter(r -> !day.isBefore(r.getStart()) && !day.isAfter(r.getEnd()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Date not in any academic month"));
+
+        // — Step 7: Count used in this academic-month
+        int usedThisMonth = leaveRequestRepository.countPermissionLeavesInRange(
+                emp.getEmpId(),
+                currentMonth.getStart(),
+                currentMonth.getEnd()
+        );
+        if (usedThisMonth >= 2) {
+            throw new RuntimeException(
+                    String.format("Permission limit for %s–%s reached: already used %d of 2",
+                            currentMonth.getStart(),
+                            currentMonth.getEnd(),
+                            usedThisMonth)
+            );
+        }
+
+        // If you reach here, the request is valid.
     }
+
+
 
     public void validateMedicalLeave(LeaveRequestDTO dto) {
         // Step 1: Ensure at least 3 consecutive days
@@ -314,6 +370,60 @@ public class LeaveValidationService {
 
     }
     public void validatelate(LeaveRequestDTO leaveRequestDTO){
+
+        LocalDate academicStart = academicMonthCycleUtil.getAcademicYearStart();
+        LocalDate today = LocalDate.now();
+
+        // — Step 1: Must be a one-day request
+        if (!leaveRequestDTO.getStartDate().equals(leaveRequestDTO.getEndDate())) {
+            throw new RuntimeException("Late Leave must be for exactly one day.");
+        }
+        LocalDate day = leaveRequestDTO.getStartDate();
+
+        // — Step 2: Load Employee
+        Employee emp = employeeRepository.findByEmpId(leaveRequestDTO.getEmpId())
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        // — Step 3: Load late LeaveType
+        LeaveType permType = leaveTypeRepository.findByTypeNameIgnoreCase("late")
+                .orElseThrow(() -> new RuntimeException("Late Leave type not found"));
+
+        // — Step 4: Load Leave Balance
+        EmployeeLeaveBalance bal = employeeLeaveBalanceRepository
+                .findByEmployeeAndLeaveType(emp, permType)
+                .orElseThrow(() -> new RuntimeException("Late Leave balance not found"));
+
+        if (bal.getBalanceLeave() <= 0) {
+            throw new RuntimeException("You have no remaining Late Leave balance.");
+        }
+
+        // — Step 5: Check overlapping leaves
+        boolean hasOverlap = leaveRequestRepository.existsByEmployeeAndDate(emp.getEmpId(), day);
+        if (hasOverlap) {
+            throw new RuntimeException("You already have a leave on " + day);
+        }
+
+        // — Step 6: Find current academic-month
+        List<MonthRange> ranges = buildAcademicMonthRanges(academicStart, LocalDate.now());
+        MonthRange currentMonth = ranges.stream()
+                .filter(r -> !day.isBefore(r.getStart()) && !day.isAfter(r.getEnd()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Date not in any academic month"));
+
+        // — Step 7: Count used in this academic-month
+        int usedThisMonth = leaveRequestRepository.countlateInRange(
+                emp.getEmpId(),
+                currentMonth.getStart(),
+                currentMonth.getEnd()
+        );
+        if (usedThisMonth >= 2) {
+            throw new RuntimeException(
+                    String.format("late limit for %s–%s reached: already used %d of 2",
+                            currentMonth.getStart(),
+                            currentMonth.getEnd(),
+                            usedThisMonth)
+            );
+        }
 
     }
 }

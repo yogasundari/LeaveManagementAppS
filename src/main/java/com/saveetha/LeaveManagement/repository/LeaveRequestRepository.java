@@ -108,6 +108,51 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Inte
             @Param("endTime") LocalTime endTime,
             @Param("statuses") List<LeaveStatus> statuses
     );
+    @Query("""
+      SELECT CASE WHEN COUNT(lr) > 0 THEN TRUE ELSE FALSE END
+      FROM LeaveRequest lr
+      WHERE lr.employee.empId = :empId
+        AND lr.startDate = :date
+        AND lr.status IN ('PENDING','APPROVED')
+    """)
+    boolean existsByEmployeeAndDate(
+            @Param("empId") String empId,
+            @Param("date")  LocalDate date
+    );
 
-
+    /**
+     * Count how many PERMISSION leaves (PENDING or APPROVED) the employee has taken
+     * between two dates (inclusive).
+     */
+    @Query("""
+      SELECT COUNT(lr)
+      FROM LeaveRequest lr
+      WHERE lr.employee.empId = :empId
+        AND lr.leaveType.typeName = 'PERMISSION'
+        AND lr.status IN ('PENDING','APPROVED')
+        AND lr.startDate BETWEEN :startDate AND :endDate
+    """)
+    int countPermissionLeavesInRange(
+            @Param("empId")     String    empId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate")   LocalDate endDate
+    );
+    /**
+     * Count how many PERMISSION leaves (PENDING or APPROVED) the employee has taken
+     * between two dates (inclusive).
+     */
+    @Query("""
+      SELECT COUNT(lr)
+      FROM LeaveRequest lr
+      WHERE lr.employee.empId = :empId
+        AND lr.leaveType.typeName = 'LATE'
+        AND lr.status IN ('PENDING','APPROVED')
+        AND lr.startDate BETWEEN :startDate AND :endDate
+    """)
+    int countlateInRange(
+            @Param("empId")     String    empId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate")   LocalDate endDate
+    );
 }
+
