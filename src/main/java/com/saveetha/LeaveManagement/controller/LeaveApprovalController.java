@@ -1,6 +1,7 @@
 package com.saveetha.LeaveManagement.controller;
 
 import com.saveetha.LeaveManagement.dto.ApprovalRequestDTO;
+import com.saveetha.LeaveManagement.dto.LeaveAlterationDto;
 import com.saveetha.LeaveManagement.dto.LeaveRequestSummaryDTO;
 import com.saveetha.LeaveManagement.entity.LeaveRequest;
 import com.saveetha.LeaveManagement.enums.ApprovalStatus;
@@ -22,6 +23,7 @@ public class LeaveApprovalController {
 
     private final LeaveApprovalService leaveApprovalService;
     private final LeaveApprovalRepository leaveApprovalRepository;
+
 
     // Call this after submitting the leave request
     @PostMapping("/initiate/{leaveRequestId}")
@@ -66,6 +68,31 @@ System.out.println(loggedInEmpId);
             dto.setEndDate(request.getEndDate().toString());
             dto.setReason(request.getReason());
             dto.setStatus(request.getStatus().name());
+
+            // Map LeaveAlteration -> LeaveAlterationDto
+            List<LeaveAlterationDto> alterationDtos = request.getAlterations().stream().map(alt -> {
+                LeaveAlterationDto altDto = new LeaveAlterationDto();
+                altDto.setRequestId(request.getRequestId());
+                altDto.setEmpId(request.getEmployee().getEmpId());
+                altDto.setAlterationType(alt.getAlterationType());
+                altDto.setMoodleActivityLink(alt.getMoodleActivityLink());
+
+                // Null-safe replacementEmpId
+                if (alt.getReplacementEmployee() != null) {
+                    altDto.setReplacementEmpId(alt.getReplacementEmployee().getEmpId());
+                } else {
+                    altDto.setReplacementEmpId(null);
+                }
+
+                altDto.setNotificationStatus(alt.getNotificationStatus());
+                altDto.setClassPeriod(alt.getClassPeriod());
+                altDto.setClassDate(alt.getClassDate());
+                altDto.setSubjectName(alt.getSubjectName());
+                altDto.setSubjectCode(alt.getSubjectCode());
+                return altDto;
+            }).collect(Collectors.toList());
+
+            dto.setAlterations(alterationDtos);
             return dto;
         }).collect(Collectors.toList());
 

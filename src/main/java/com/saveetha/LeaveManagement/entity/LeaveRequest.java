@@ -7,6 +7,7 @@ import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 @Entity
 @Table(name = "LeaveRequest")
@@ -34,8 +35,13 @@ public class LeaveRequest {
     @Column(nullable = false)
     private LocalDate endDate;
 
+
+
+    @OneToMany(mappedBy = "leaveRequest", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<LeaveAlteration> alterations;
+
     @Column(name = "number_of_days")
-    private double numberOfDays;
+    private Double numberOfDays;
 
     private LocalTime startTime;
     private LocalTime endTime;
@@ -194,8 +200,25 @@ public class LeaveRequest {
         this.updatedAt = updatedAt;
     }
 
+    public List<LeaveAlteration> getAlterations() {
+        return alterations;
+    }
 
-    
+    public void setNumberOfDays(Double numberOfDays) {
+        this.numberOfDays = numberOfDays;
+    }
+
+    public void setAlterations(List<LeaveAlteration> alterations) {
+        this.alterations = alterations;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
 }
 
 
