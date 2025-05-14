@@ -14,7 +14,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Integer> {
-    Optional<LeaveRequest> findTopByEmpIdOrderByStartDateDesc();
+    Optional<LeaveRequest> findTopByEmployeeEmpIdOrderByStartDateDesc(String empId);
+
 
     // Get all leave requests by employee
     List<LeaveRequest> findByEmployeeEmpId(String empId);

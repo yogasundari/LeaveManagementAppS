@@ -160,7 +160,7 @@ public class LeaveRequestService {
     }
     public void attachMedicalCertificate(String empId, String fileUrl) {
         LeaveRequest latestRequest = leaveRequestRepository
-                .findTopByEmpIdOrderByStartDateDesc()
+                .findTopByEmployeeEmpIdOrderByStartDateDesc(empId)
                 .orElseThrow(() -> new RuntimeException("Leave request not found"));
 
         latestRequest.setFileUpload(fileUrl);
