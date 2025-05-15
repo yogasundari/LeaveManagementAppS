@@ -37,14 +37,11 @@ public class LeaveRequestController {
         String response = leaveRequestService.withdrawLeaveRequest(requestId);
         return ResponseEntity.ok(response);
     }
-    @PostMapping("/upload-medical-certificate/{empId}")
-    public ResponseEntity<String> uploadMedicalCertificate(
-            @PathVariable String empId,
-            @RequestParam("file") MultipartFile file) {
+    @PostMapping("/upload-medical-certificate")
+    public ResponseEntity<String> uploadMedicalCertificate(@RequestParam("file") MultipartFile file) {
         try {
-            String fileUrl = cloudinaryService.uploadDocument(file); // Generic upload method
-            leaveRequestService.attachMedicalCertificate(empId, fileUrl); // Save URL in DB
-            return ResponseEntity.ok(fileUrl);
+            String fileUrl = cloudinaryService.uploadDocument(file); // Uploads to Cloudinary
+            return ResponseEntity.ok(fileUrl); // Return just the URL to frontend
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("File upload failed.");

@@ -158,14 +158,4 @@ public class LeaveRequestService {
                 .orElseThrow(() -> new RuntimeException("Leave Request not found with ID: " + id));
         leaveRequestRepository.delete(leaveRequest);
     }
-    public void attachMedicalCertificate(String empId, String fileUrl) {
-        LeaveRequest latestRequest = leaveRequestRepository
-                .findTopByEmployeeEmpIdOrderByStartDateDesc(empId)
-                .orElseThrow(() -> new RuntimeException("Leave request not found"));
-
-        latestRequest.setFileUpload(fileUrl);
-        leaveRequestRepository.save(latestRequest);
-    }
-
-
 }
