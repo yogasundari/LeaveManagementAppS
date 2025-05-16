@@ -4,6 +4,7 @@ import java.util.List;
 
 public class LeaveRequestSummaryDTO {
     private Integer requestId;
+    private Integer approvalId;
     private String empId;
     private String empName;
     private String leaveType;
@@ -82,6 +83,14 @@ public class LeaveRequestSummaryDTO {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Integer getApprovalId() {
+        return approvalId;
+    }
+
+    public void setApprovalId(Integer approvalId) {
+        this.approvalId = approvalId;
     }
 // getters and setters
 }

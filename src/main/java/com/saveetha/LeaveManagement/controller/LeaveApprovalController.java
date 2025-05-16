@@ -2,7 +2,9 @@ package com.saveetha.LeaveManagement.controller;
 
 import com.saveetha.LeaveManagement.dto.ApprovalRequestDTO;
 import com.saveetha.LeaveManagement.dto.LeaveAlterationDto;
+import com.saveetha.LeaveManagement.dto.LeaveApprovalStatusDTO;
 import com.saveetha.LeaveManagement.dto.LeaveRequestSummaryDTO;
+import com.saveetha.LeaveManagement.entity.LeaveApproval;
 import com.saveetha.LeaveManagement.entity.LeaveRequest;
 import com.saveetha.LeaveManagement.enums.ApprovalStatus;
 import com.saveetha.LeaveManagement.service.LeaveApprovalService;
@@ -33,7 +35,7 @@ public class LeaveApprovalController {
     }
 
     // Call this when an approver approves or rejects
-    @PatchMapping("/process/{approvalId}")
+    @GetMapping("/process/{approvalId}")
     public ResponseEntity<String> processApproval(
             @PathVariable Integer approvalId,
             @RequestBody ApprovalRequestDTO approvalRequestDTOdto
@@ -46,8 +48,6 @@ System.out.println(loggedInEmpId);
                 approvalRequestDTOdto.getReason(),  // The reason for the approval or rejection
                 loggedInEmpId  // The employee ID of the logged-in approver
         );
-
-
         return ResponseEntity.ok(result);
     }
     // Fetch pending requests for the logged-in approver
@@ -56,18 +56,21 @@ System.out.println(loggedInEmpId);
         String loggedInEmpId = SecurityContextHolder.getContext().getAuthentication().getName();
         System.out.println("Fetching pending requests for: " + loggedInEmpId);
 
-        List<LeaveRequest> pendingRequests = leaveApprovalRepository.findPendingRequestsForApprover(loggedInEmpId);
+        List<LeaveApproval> pendingApprovals = leaveApprovalRepository.findPendingApprovalsForApprover(loggedInEmpId);
 
-        List<LeaveRequestSummaryDTO> summaryList = pendingRequests.stream().map(request -> {
+        List<LeaveRequestSummaryDTO> summaryList = pendingApprovals.stream().map(approval -> {
+            LeaveRequest request = approval.getLeaveRequest();
+
             LeaveRequestSummaryDTO dto = new LeaveRequestSummaryDTO();
             dto.setRequestId(request.getRequestId());
+            dto.setApprovalId(approval.getApprovalId()); // 👈 Important for PATCH
             dto.setEmpId(request.getEmployee().getEmpId());
             dto.setEmpName(request.getEmployee().getEmpName());
             dto.setLeaveType(request.getLeaveType().getTypeName());
             dto.setStartDate(request.getStartDate().toString());
             dto.setEndDate(request.getEndDate().toString());
             dto.setReason(request.getReason());
-            dto.setStatus(request.getStatus().name());
+            dto.setStatus(approval.getStatus().name()); // 👈 Current status of approval
 
             // Map LeaveAlteration -> LeaveAlterationDto
             List<LeaveAlterationDto> alterationDtos = request.getAlterations().stream().map(alt -> {
@@ -77,7 +80,6 @@ System.out.println(loggedInEmpId);
                 altDto.setAlterationType(alt.getAlterationType());
                 altDto.setMoodleActivityLink(alt.getMoodleActivityLink());
 
-                // Null-safe replacementEmpId
                 if (alt.getReplacementEmployee() != null) {
                     altDto.setReplacementEmpId(alt.getReplacementEmployee().getEmpId());
                 } else {
@@ -98,5 +100,15 @@ System.out.println(loggedInEmpId);
 
         return ResponseEntity.ok(summaryList);
     }
+    @GetMapping("/status/{leaveRequestId}")
+    public ResponseEntity<List<LeaveApprovalStatusDTO>> getApprovalStatusByLeaveRequestId(
+            @PathVariable Integer leaveRequestId) {
+        List<LeaveApprovalStatusDTO> approvalStatusList = leaveApprovalService.getApprovalStatusByLeaveRequestId(leaveRequestId);
 
+        if (approvalStatusList.isEmpty()) {
+            return ResponseEntity.noContent().build();  // 204 if no approval data found
+        }
+
+        return ResponseEntity.ok(approvalStatusList);
+    }
 }

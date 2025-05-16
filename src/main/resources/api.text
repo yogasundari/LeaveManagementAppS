@@ -8,12 +8,13 @@ register------->POST--->http://localhost:8080/auth/register
            "password":"Yazhu@07",
            "role":"ADMIN"
         }
+response:
 login-------->POST---->http://localhost:8080/auth/login
     {
        "email":"yoga@gmail.com",
        "password":"Yazhu@07"
     }
-
+response :
 
 =--------------------------------------------------Update-Profile:---------------------------------
 

@@ -22,13 +22,15 @@ public interface LeaveApprovalRepository extends JpaRepository<LeaveApproval, In
     Optional<LeaveApproval> findByLeaveRequestAndApprover(LeaveRequest leaveRequest, Employee approver);
 
     List<LeaveApproval> findByApprover(Employee approver);
+    List<LeaveApproval> findByLeaveRequest_RequestIdOrderByApprovalFlowLevel_SequenceAsc(Integer leaveRequestId);
+
+
 
     List<LeaveApproval> findByLeaveRequest_RequestId(Integer requestId);
 
     boolean existsByLeaveRequestAndApproverAndStatus(LeaveRequest leaveRequest, Employee approver, ApprovalStatus status);
-    @Query("SELECT la.leaveRequest FROM LeaveApproval la " +
-            "WHERE la.approver.empId = :empId " +
-            "AND la.status = 'PENDING' " +  // String representation of the enum value
-            "AND la.active = true")
-    List<LeaveRequest> findPendingRequestsForApprover(@Param("empId") String empId);
+    @Query("SELECT a FROM LeaveApproval a WHERE a.approver.empId = :empId AND a.status = 'PENDING'")
+    List<LeaveApproval> findPendingApprovalsForApprover(@Param("empId") String empId);
+
+
 }

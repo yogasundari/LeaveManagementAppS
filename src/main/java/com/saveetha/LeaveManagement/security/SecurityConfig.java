@@ -92,18 +92,20 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.GET, "/api/leave-request/{id}").permitAll()
 						.requestMatchers(HttpMethod.DELETE, "/api/leave-request/{id}").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.POST, "api/leave-request/upload-medical-certificate/**").permitAll()
+						.requestMatchers(HttpMethod.GET, "/api/leave-request/leave-history").permitAll()
 
 						.requestMatchers(HttpMethod.POST, "/api/leave-alteration/**").permitAll()
 						.requestMatchers(HttpMethod.PATCH, "/api/leave-alteration/**").permitAll()
 						.requestMatchers(HttpMethod.PATCH, "/api/leave-approval/**").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/leave-alteration/{id}").permitAll()
+						.requestMatchers(HttpMethod.GET, "/api/leave-alteration/notification-status/**").permitAll()
 						.requestMatchers(HttpMethod.PUT, "/api/leave-alteration/update/{id}").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/leave-alteration/all").hasAuthority("ADMIN")
 
 						.requestMatchers(HttpMethod.GET, "/api/notifications").authenticated()
 						.requestMatchers(HttpMethod.GET, "/api/leave-approval/all").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.GET, "/api/leave-approval/{approvalId}").permitAll()
-
+						.requestMatchers(HttpMethod.GET, "/api/leave-approval/status/**").permitAll()
 						.requestMatchers(HttpMethod.DELETE, "/api/leave-approval/delete/{approvalId}").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.PUT, "/api/leave-approval/update/{approvalId}").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.PATCH, "/api/leave-approval/process/{approvalId}").authenticated()
