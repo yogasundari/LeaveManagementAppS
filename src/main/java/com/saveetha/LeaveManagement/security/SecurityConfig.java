@@ -93,6 +93,8 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.DELETE, "/api/leave-request/{id}").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.POST, "api/leave-request/upload-medical-certificate/**").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/leave-request/leave-history").permitAll()
+						.requestMatchers(HttpMethod.POST, "/api/leave-request/withdraw/{leaveRequestId}").permitAll()
+
 
 						.requestMatchers(HttpMethod.POST, "/api/leave-alteration/**").permitAll()
 						.requestMatchers(HttpMethod.PATCH, "/api/leave-alteration/**").permitAll()

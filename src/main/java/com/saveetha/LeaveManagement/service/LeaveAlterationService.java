@@ -70,6 +70,7 @@ public class LeaveAlterationService {
 
         return "Alteration created successfully with ID: " + saved.getAlterationId();
     }
+
     public void approveAlteration(Integer alterationId) {
         LeaveAlteration alteration = leaveAlterationRepository.findById(alterationId)
                 .orElseThrow(() -> new RuntimeException("Alteration not found"));

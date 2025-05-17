@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -27,6 +28,7 @@ public class LeaveRequestService {
     private final LeaveAlterationRepository leaveAlterationRepository;
     private final LeaveApprovalService leaveApprovalService;
     private final LeaveValidationService leaveValidationService;
+    private final LeaveApprovalRepository leaveApprovalRepository;
 
     public LeaveRequest createDraftLeaveRequest(LeaveRequestDTO leaveRequestdto) {
         Employee employee = employeeRepository.findByEmpId(leaveRequestdto.getEmpId())
@@ -135,18 +137,19 @@ public class LeaveRequestService {
     }
 
 
-    public String withdrawLeaveRequest(Integer requestId) {
-        LeaveRequest leaveRequest = leaveRequestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Leave request not found"));
-
-        if (leaveRequest.getStatus() == LeaveStatus.PENDING || leaveRequest.getStatus() == LeaveStatus.APPROVED) {
-            leaveRequest.setStatus(LeaveStatus.WITHDRAWN);
-            leaveRequestRepository.save(leaveRequest);
-            return "Leave request withdrawn successfully.";
-        } else {
-            throw new RuntimeException("Only PENDING or APPROVED leave requests can be withdrawn.");
+    @Transactional
+    public void withdrawLeaveRequestByEmployee(Integer leaveRequestId, String empId) throws IllegalAccessException {
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
+                .orElseThrow(() -> new IllegalArgumentException("Leave request not found"));
+        if (!leaveRequest.getEmployee().getEmpId().equals(empId)) {
+            throw new IllegalAccessException("You are not authorized to withdraw this leave request");
         }
+
+        leaveRequest.setStatus(LeaveStatus.WITHDRAWN);
+        leaveApprovalRepository.deleteByLeaveRequest(leaveRequest);
+        leaveRequestRepository.save(leaveRequest);
     }
+
     private String getCurrentUserEmpId(){
         Object principal= SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if(principal instanceof UserDetails userDetails) {
