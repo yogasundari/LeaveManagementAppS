@@ -91,7 +91,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.GET, "/api/leave-request/all").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.GET, "/api/leave-request/{id}").permitAll()
 						.requestMatchers(HttpMethod.DELETE, "/api/leave-request/{id}").hasAuthority("ADMIN")
-						.requestMatchers(HttpMethod.POST, "api/leave-request/upload-medical-certificate/**").permitAll()
+						.requestMatchers(HttpMethod.POST, "api/leave-request/upload-file/**").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/leave-request/leave-history").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/leave-request/withdraw/{leaveRequestId}").permitAll()
 

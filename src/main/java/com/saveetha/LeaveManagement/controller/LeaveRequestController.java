@@ -58,7 +58,7 @@ public class LeaveRequestController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
-    @PostMapping("/upload-medical-certificate")
+    @PostMapping("/upload-file")
     public ResponseEntity<String> uploadMedicalCertificate(@RequestParam("file") MultipartFile file) {
         try {
             String fileUrl = cloudinaryService.uploadDocument(file); // Uploads to Cloudinary
