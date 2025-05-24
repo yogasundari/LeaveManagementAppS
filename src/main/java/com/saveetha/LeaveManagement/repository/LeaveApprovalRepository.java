@@ -28,6 +28,6 @@ public interface LeaveApprovalRepository extends JpaRepository<LeaveApproval, In
     boolean existsByLeaveRequestAndApproverAndStatus(LeaveRequest leaveRequest, Employee approver, ApprovalStatus status);
     @Query("SELECT a FROM LeaveApproval a WHERE a.approver.empId = :empId AND a.status = 'PENDING'")
     List<LeaveApproval> findPendingApprovalsForApprover(@Param("empId") String empId);
-
+    List<LeaveApproval> findByLeaveRequestRequestId(Integer leaveRequestId);
 
 }
