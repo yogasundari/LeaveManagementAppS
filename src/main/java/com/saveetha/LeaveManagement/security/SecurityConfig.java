@@ -87,6 +87,8 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.POST, "/api/leave").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/leave/apply").hasAnyAuthority("EMPLOYEE", "ADMIN")
 
+						.requestMatchers(HttpMethod.POST,"/api/leave-balance/{empId}").hasAuthority("ADMIN")
+
 						.requestMatchers(HttpMethod.POST, "/api/leave-request/**").authenticated()
 						.requestMatchers(HttpMethod.PATCH, "/api/leave-request/**").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/leave-request/all").hasAuthority("ADMIN")
