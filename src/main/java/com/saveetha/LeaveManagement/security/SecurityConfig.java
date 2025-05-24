@@ -75,6 +75,7 @@ public class SecurityConfig {
 
 						.requestMatchers(HttpMethod.GET ,"/api/employees/active").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.PUT, "/api/employees/update/**").authenticated()
+						.requestMatchers(HttpMethod.POST, "/api/employees/create").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.GET, "/api/employees").authenticated()
 						.requestMatchers(HttpMethod.GET, "/api/employees/{empId}").permitAll()
 						.requestMatchers(HttpMethod.DELETE, "/api/employees/{empId}").hasAuthority("ADMIN")
