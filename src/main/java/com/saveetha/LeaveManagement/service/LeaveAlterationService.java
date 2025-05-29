@@ -46,29 +46,16 @@ public class LeaveAlterationService {
                 // Set Type and Details
                 alteration.setAlterationType(dto.getAlterationType());
 
-                // Handle Moodle Link
                 if (dto.getAlterationType() == AlterationType.MOODLE_LINK) {
                     alteration.setMoodleActivityLink(dto.getMoodleActivityLink());
-                    alteration.setNotificationStatus(null); // No approval needed
+                    alteration.setNotificationStatus(null);
                 }
 
-                // Handle Staff Alteration
                 if (dto.getAlterationType() == AlterationType.STAFF_ALTERATION) {
                     Employee replacement = employeeRepository.findById(dto.getReplacementEmpId())
                             .orElseThrow(() -> new RuntimeException("Replacement Employee not found"));
-
                     alteration.setReplacementEmployee(replacement);
-                    alteration.setNotificationStatus(NotificationStatus.PENDING); // Approval needed
-
-                    // Fetch requesting employee using dto.getEmpId()
-                    Employee requester = employeeRepository.findByEmpId(dto.getEmpId())
-                            .orElseThrow(() -> new RuntimeException("Requesting Employee not found"));
-
-                    String message = "You have been assigned to handle class alteration on " + dto.getClassDate()
-                            + " (Period: " + dto.getClassPeriod() + ", Subject: " + dto.getSubjectName() + ") "
-                            + "by " + requester.getEmpName() + " (" + requester.getEmpId() + ")";
-
-                    notificationService.sendNotification(dto.getReplacementEmpId(), message);
+                    alteration.setNotificationStatus(NotificationStatus.PENDING);
                 }
 
                 alteration.setClassDate(dto.getClassDate());
@@ -76,11 +63,25 @@ public class LeaveAlterationService {
                 alteration.setSubjectCode(dto.getSubjectCode());
                 alteration.setSubjectName(dto.getSubjectName());
 
+                // Save first to generate ID
                 LeaveAlteration saved = leaveAlterationRepository.save(alteration);
-                resultMessages.append("Alteration created successfully with ID: ").append(saved.getAlterationId()).append("\n");
+
+                // Send notification after save
+                if (dto.getAlterationType() == AlterationType.STAFF_ALTERATION) {
+                    Employee requester = employeeRepository.findByEmpId(dto.getEmpId())
+                            .orElseThrow(() -> new RuntimeException("Requesting Employee not found"));
+
+                    String message = "You have been assigned to handle class alteration (ID: " + saved.getAlterationId() + ") on " +
+                            dto.getClassDate() + " (Period: " + dto.getClassPeriod() + ", Subject: " + dto.getSubjectName() + ") " +
+                            "by " + requester.getEmpName() + " (" + requester.getEmpId() + ")";
+
+                    notificationService.sendNotification(dto.getReplacementEmpId(), message);
+                }
+
+                resultMessages.append("Alteration created successfully with ID: ")
+                        .append(saved.getAlterationId()).append("\n");
 
             } catch (Exception e) {
-                // You can choose to either stop at first error or continue and accumulate errors
                 resultMessages.append("Failed to create alteration for requestId ")
                         .append(dto.getRequestId()).append(": ").append(e.getMessage()).append("\n");
             }
@@ -88,6 +89,7 @@ public class LeaveAlterationService {
 
         return resultMessages.toString();
     }
+
 
 
     public void approveAlteration(Integer alterationId) {
@@ -109,6 +111,27 @@ public class LeaveAlterationService {
         System.out.println("Alteration approved by replacement faculty (Emp ID: " +
                 alteration.getReplacementEmployee().getEmpId() + ")");
     }
+    public void rejectAlteration(Integer alterationId) {
+        LeaveAlteration alteration = leaveAlterationRepository.findById(alterationId)
+                .orElseThrow(() -> new RuntimeException("Alteration not found"));
+
+        // Only allow rejection if it's PENDING
+        if (alteration.getNotificationStatus() != NotificationStatus.PENDING) {
+            throw new IllegalStateException("Alteration already processed.");
+        }
+
+        String loggedInEmpId = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (!alteration.getReplacementEmployee().getEmpId().equals(loggedInEmpId)) {
+            throw new RuntimeException("Only the assigned replacement faculty can reject this alteration.");
+        }
+
+        alteration.setNotificationStatus(NotificationStatus.REJECTED);
+        leaveAlterationRepository.save(alteration);
+
+        System.out.println("Alteration rejected by replacement faculty (Emp ID: " +
+                alteration.getReplacementEmployee().getEmpId() + ")");
+    }
+
     public void updateAlteration(Integer id, LeaveAlterationDto dto) {
         LeaveAlteration alteration = leaveAlterationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Alteration not found"));

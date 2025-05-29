@@ -37,5 +37,11 @@ public class LeaveAlterationController {
         List<String> statuses = leaveAlterationService.getNotificationStatuses(requestId);
         return ResponseEntity.ok(statuses);
     }
+    @PatchMapping("/reject/{id}")
+    public ResponseEntity<String> rejectAlteration(@PathVariable("id") Integer id) {
+        leaveAlterationService.rejectAlteration(id);
+        return ResponseEntity.ok("Alteration rejected successfully!");
+    }
+
 
 }

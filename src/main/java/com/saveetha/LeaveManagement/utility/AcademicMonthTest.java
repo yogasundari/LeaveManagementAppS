@@ -15,7 +15,7 @@ public class AcademicMonthTest implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        LocalDate today = LocalDate.of(2025, 04, 23);  // Get today's date
+        LocalDate today = LocalDate.of(2025, 05, 29);  // Get today's date
         MonthCycle month = academicMonthCycleUtil.getAcademicMonth(today);
 
         if (month != null) {

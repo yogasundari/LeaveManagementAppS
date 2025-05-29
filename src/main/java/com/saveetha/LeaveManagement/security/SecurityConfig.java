@@ -83,7 +83,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.PATCH ,"/api/employees/deactivate/**").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.POST ,"/api/employees/upload-picture/{empId}/**").authenticated()
 
-
+						.requestMatchers(HttpMethod.GET, "/api/notifications/{empId}").authenticated()
 						.requestMatchers(HttpMethod.POST, "/api/leave").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/leave/apply").hasAnyAuthority("EMPLOYEE", "ADMIN")
 
@@ -101,13 +101,15 @@ public class SecurityConfig {
 
 						.requestMatchers(HttpMethod.POST, "/api/leave-alteration/**").permitAll()
 						.requestMatchers(HttpMethod.PATCH, "/api/leave-alteration/**").permitAll()
+						.requestMatchers(HttpMethod.PATCH, "/api/leave-alteration/reject/**").permitAll()
+						.requestMatchers(HttpMethod.PATCH, "/api/leave-alteration/approve/**").permitAll()
 						.requestMatchers(HttpMethod.PATCH, "/api/leave-approval/**").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/leave-alteration/{id}").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/leave-alteration/notification-status/**").permitAll()
 						.requestMatchers(HttpMethod.PUT, "/api/leave-alteration/update/{id}").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/leave-alteration/all").hasAuthority("ADMIN")
 
-						.requestMatchers(HttpMethod.GET, "/api/notifications").authenticated()
+						.requestMatchers(HttpMethod.GET, "/api/notifications/**").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/leave-approval/all").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.GET, "/api/leave-approval/{approvalId}").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/leave-approval/status/**").permitAll()
