@@ -53,7 +53,7 @@ public class SecurityConfig {
 
 						.requestMatchers(HttpMethod.GET, "/api/leave-types/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/leave-types/create").hasAuthority("ADMIN")
-						.requestMatchers(HttpMethod.PUT, "/api/leave-types/**").hasAuthority("ADMIN")
+						.requestMatchers(HttpMethod.PUT, "/api/leave-types/{id}").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.DELETE, "/api/leave-types/**").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.PATCH, "/api/leave-types/deactivate/**").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.PATCH, "/api/leave-types/activate/**").hasAuthority("ADMIN")
