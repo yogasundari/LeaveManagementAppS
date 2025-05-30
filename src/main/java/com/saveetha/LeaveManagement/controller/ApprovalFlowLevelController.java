@@ -1,5 +1,6 @@
 package com.saveetha.LeaveManagement.controller;
 
+import com.saveetha.LeaveManagement.dto.ApprovalFlowLevelDTO;
 import com.saveetha.LeaveManagement.entity.ApprovalFlowLevel;
 import com.saveetha.LeaveManagement.service.ApprovalFlowLevelService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-
+import com.saveetha.LeaveManagement.dto.ApprovalFlowLevelDTO;
 @RestController
 @RequestMapping("/api/approval-flow-levels")
 public class ApprovalFlowLevelController {
@@ -49,9 +50,9 @@ public class ApprovalFlowLevelController {
     @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ApprovalFlowLevel> updateApprovalFlowLevel(@PathVariable Integer id,
-                                                                     @RequestBody ApprovalFlowLevel updatedLevel) {
-        ApprovalFlowLevel result = approvalFlowLevelService.updateApprovalFlowLevel(id, updatedLevel);
-        return ResponseEntity.ok(result);
+                                                                     @RequestBody ApprovalFlowLevelDTO dto) {
+        ApprovalFlowLevel updatedLevel = approvalFlowLevelService.updateApprovalFlowLevel(id, dto);
+        return ResponseEntity.ok(updatedLevel);
     }
     @PreAuthorize("hasAuthority('ADMIN')")
     @PatchMapping("/activate/{id}")

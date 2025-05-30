@@ -1,14 +1,18 @@
 package com.saveetha.LeaveManagement.controller;
 
+import com.saveetha.LeaveManagement.dto.AssignApprovalFlowDTO;
 import com.saveetha.LeaveManagement.dto.CreateEmployeeRequestDto;
 import com.saveetha.LeaveManagement.dto.EmployeeUpdateDTO;
 import com.saveetha.LeaveManagement.entity.Employee;
+import com.saveetha.LeaveManagement.repository.EmployeeLeaveBalanceRepository;
+import com.saveetha.LeaveManagement.repository.EmployeeRepository;
 import com.saveetha.LeaveManagement.service.CloudinaryService;
 import com.saveetha.LeaveManagement.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,6 +31,11 @@ public class EmployeeController {
 
     @Autowired
     private CloudinaryService cloudinaryService;
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
+    @Autowired
+    private EmployeeLeaveBalanceRepository employeeLeaveBalanceRepository;
 
     public EmployeeController(EmployeeService employeeService) {
         this.employeeService = employeeService;
@@ -89,15 +98,34 @@ public class EmployeeController {
                 : ResponseEntity.notFound().build();
     }
     @DeleteMapping("/{empId}")
+    @Transactional
     public ResponseEntity<String> deleteEmployee(@PathVariable String empId) {
-        boolean result = employeeService.deleteEmployee(empId);
-        return result ? ResponseEntity.ok("Employee deleted successfully")
-                : ResponseEntity.notFound().build();
+        try {
+            // First delete leave balances to satisfy FK constraints
+            employeeLeaveBalanceRepository.deleteByEmpId(empId);
+
+            // Then delete the employee
+            employeeRepository.deleteById(empId);
+
+            return ResponseEntity.ok("Employee deleted successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to delete employee: " + e.getMessage());
+        }
     }
+
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> createEmployee(@RequestBody CreateEmployeeRequestDto dto) {
         Employee employee = employeeService.createEmployee(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(employee);
+    }
+    @PutMapping("/assign-approval-flow")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<String> assignApprovalFlowToEmployee(@RequestBody AssignApprovalFlowDTO dto) {
+        boolean updated = employeeService.updateEmployeeWithApprovalFlow(dto);
+        return updated
+                ? ResponseEntity.ok("Employee details updated and approval flow assigned successfully.")
+                : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee or Approval Flow not found.");
     }
 }

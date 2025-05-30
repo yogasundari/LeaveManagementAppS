@@ -4,7 +4,9 @@ import com.saveetha.LeaveManagement.entity.Employee;
 import com.saveetha.LeaveManagement.entity.EmployeeLeaveBalance;
 import com.saveetha.LeaveManagement.entity.EmployeeLeaveBalanceId;
 import com.saveetha.LeaveManagement.entity.LeaveType;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -17,4 +19,9 @@ public interface EmployeeLeaveBalanceRepository extends JpaRepository<EmployeeLe
     // Define the custom method to find EmployeeLeaveBalance by employee and leave type
     List<EmployeeLeaveBalance> findByEmployee(Employee employee);
     Optional<EmployeeLeaveBalance> findByEmployeeAndLeaveType(Employee employee, LeaveType leaveType);
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM EmployeeLeaveBalance e WHERE e.employee.empId = :empId")
+    void deleteByEmpId(@Param("empId") String empId);
+
 }
