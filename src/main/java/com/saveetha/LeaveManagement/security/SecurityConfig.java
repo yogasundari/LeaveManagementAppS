@@ -65,7 +65,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.DELETE, "/api/approval-flows/**").hasAuthority("ADMIN")
 
 
-						.requestMatchers(HttpMethod.GET, "/api/approval-flow-levels").permitAll()
+						.requestMatchers(HttpMethod.GET, "/api/approval-flow-levels/active").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/approval-flow-levels/flow/**").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.POST, "/api/approval-flow-levels/").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.POST, "/api/approval-flow-levels/create").hasAuthority("ADMIN")

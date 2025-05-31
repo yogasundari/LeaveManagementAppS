@@ -3,6 +3,7 @@ package com.saveetha.LeaveManagement.controller;
 import com.saveetha.LeaveManagement.dto.ApprovalFlowLevelDTO;
 import com.saveetha.LeaveManagement.entity.ApprovalFlowLevel;
 import com.saveetha.LeaveManagement.service.ApprovalFlowLevelService;
+import com.saveetha.LeaveManagement.utility.ApprovalFlowLevelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,9 +20,9 @@ public class ApprovalFlowLevelController {
     private ApprovalFlowLevelService approvalFlowLevelService;
 
     // Get all approval flow levels
-    @GetMapping
-    public ResponseEntity<List<ApprovalFlowLevel>> getAllApprovalFlowLevels() {
-        return ResponseEntity.ok(approvalFlowLevelService.getAllApprovalFlowLevels());
+    @GetMapping("/active")
+    public ResponseEntity<List<ApprovalFlowLevelDTO>> getAllActiveApprovalFlowLevels() {
+        return ResponseEntity.ok(approvalFlowLevelService.getAllActiveApprovalFlowLevels());
     }
 
     // Get approval flow levels by Approval Flow ID
@@ -34,10 +35,14 @@ public class ApprovalFlowLevelController {
     // Get a specific approval flow level by ID
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/{id}")
-    public ResponseEntity<ApprovalFlowLevel> getApprovalFlowLevelById(@PathVariable Integer id) {
+    public ResponseEntity<ApprovalFlowLevelDTO> getApprovalFlowLevelById(@PathVariable Integer id) {
         Optional<ApprovalFlowLevel> approvalFlowLevel = approvalFlowLevelService.getApprovalFlowLevelById(id);
-        return approvalFlowLevel.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+
+        return approvalFlowLevel
+                .map(level -> ResponseEntity.ok(ApprovalFlowLevelMapper.toDTO(level)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
+
 
     // Create a new approval flow level
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -49,11 +54,12 @@ public class ApprovalFlowLevelController {
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<ApprovalFlowLevel> updateApprovalFlowLevel(@PathVariable Integer id,
-                                                                     @RequestBody ApprovalFlowLevelDTO dto) {
-        ApprovalFlowLevel updatedLevel = approvalFlowLevelService.updateApprovalFlowLevel(id, dto);
-        return ResponseEntity.ok(updatedLevel);
+    public ResponseEntity<ApprovalFlowLevelDTO> updateApprovalFlowLevel(@PathVariable Integer id,
+                                                                        @RequestBody ApprovalFlowLevelDTO dto) {
+        ApprovalFlowLevelDTO updatedDto = approvalFlowLevelService.updateApprovalFlowLevel(id, dto);
+        return ResponseEntity.ok(updatedDto);
     }
+
     @PreAuthorize("hasAuthority('ADMIN')")
     @PatchMapping("/activate/{id}")
     public ResponseEntity<ApprovalFlowLevel> activateApprovalFlowLevel(@PathVariable Integer id) {

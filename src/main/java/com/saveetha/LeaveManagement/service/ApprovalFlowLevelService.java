@@ -7,11 +7,13 @@ import com.saveetha.LeaveManagement.entity.Employee;
 import com.saveetha.LeaveManagement.repository.ApprovalFlowLevelRepository;
 import com.saveetha.LeaveManagement.repository.ApprovalFlowRepository;
 import com.saveetha.LeaveManagement.repository.EmployeeRepository;
+import com.saveetha.LeaveManagement.utility.ApprovalFlowLevelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ApprovalFlowLevelService {
@@ -25,8 +27,16 @@ public class ApprovalFlowLevelService {
     private EmployeeRepository employeeRepository;
 
     // Get all approval flow levels
-    public List<ApprovalFlowLevel> getAllApprovalFlowLevels() {
-        return approvalFlowLevelRepository.findAll();
+    public List<ApprovalFlowLevelDTO> getAllActiveApprovalFlowLevels() {
+        List<ApprovalFlowLevel> activeLevels = approvalFlowLevelRepository.findByActiveTrue();
+
+        return activeLevels.stream().map(level -> new ApprovalFlowLevelDTO(
+                level.getFlowLevelId(),
+                level.getApprovalFlow() != null ? level.getApprovalFlow().getApprovalFlowId() : null,
+                level.getSequence(),
+                level.getApprover() != null ? level.getApprover().getEmpId() : null,
+                level.isActive()
+        )).collect(Collectors.toList());
     }
 
     // Get approval levels by Approval Flow ID
@@ -66,12 +76,10 @@ public class ApprovalFlowLevelService {
         existing.setActive(isActive);
         return approvalFlowLevelRepository.save(existing);
     }
-    public ApprovalFlowLevel updateApprovalFlowLevel(Integer id, ApprovalFlowLevelDTO dto) {
+    public ApprovalFlowLevelDTO updateApprovalFlowLevel(Integer id, ApprovalFlowLevelDTO dto) {
         ApprovalFlowLevel existing = approvalFlowLevelRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Approval Flow Level not found"));
 
-
-        // update other fields if neededAdd commentMore actions
         ApprovalFlow approvalFlow = approvalFlowRepository.findById(dto.getApprovalFlowId())
                 .orElseThrow(() -> new RuntimeException("Approval Flow not found"));
 
@@ -83,8 +91,11 @@ public class ApprovalFlowLevelService {
         existing.setSequence(dto.getSequence());
         existing.setActive(dto.isActive());
 
-        return approvalFlowLevelRepository.save(existing);
+        ApprovalFlowLevel updated = approvalFlowLevelRepository.save(existing);
+
+        return ApprovalFlowLevelMapper.toDTO(updated);  // 👍 Mapper used here
     }
+
 
 }
 

@@ -7,20 +7,24 @@ import lombok.Setter;
 @Setter
 public class ApprovalFlowLevelDTO {
 
+    private Integer flowLevelId;  // Add this field
+
     private Integer approvalFlowId;
+
     private String approverId;
+
     private Integer sequence;
-    private boolean active;  //  Add this field
 
-    //  Constructor (optional)
-    public ApprovalFlowLevelDTO() {
-    }
+    private boolean active;
 
-    //  Parameterized constructor (if needed)
-    public ApprovalFlowLevelDTO(Integer approvalFlowId, String approverId, Integer sequence, boolean active) {
+    public ApprovalFlowLevelDTO() {}
+
+    public ApprovalFlowLevelDTO(Integer flowLevelId, Integer approvalFlowId, Integer sequence, String approverId, boolean active) {
+        this.flowLevelId = flowLevelId;
         this.approvalFlowId = approvalFlowId;
-        this.approverId = approverId;
         this.sequence = sequence;
+        this.approverId = approverId;
         this.active = active;
     }
+
 }
