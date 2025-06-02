@@ -60,6 +60,9 @@ public class LeaveRequest {
     @Column(nullable = false)
     private LeaveStatus status = LeaveStatus.PENDING; // Default status: Pending
 
+    @Column(name = "session")
+    private String session;
+
     @Column(nullable = false)
     private Boolean active = true;
     private boolean halfDay;
@@ -227,6 +230,14 @@ public class LeaveRequest {
 
     public void setApprovals(List<LeaveApproval> approvals) {
         this.approvals = approvals;
+    }
+
+    public String getSession() {
+        return session;
+    }
+
+    public void setSession(String session) {
+        this.session = session;
     }
 }
 

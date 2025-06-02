@@ -15,7 +15,7 @@ public class Scheduler {
     @Autowired
     private final LeaveResetService leaveResetService;
 
-    @Scheduled(cron = "0 0 2 26 5 *")
+    @Scheduled(cron = "0 0 1 25 06 *")
     public void autoResetLeaveBalances() {
         String newAcademicYear = getCurrentAcademicYear();
         leaveResetService.resetAllEmployeeLeaveBalances(newAcademicYear);

@@ -21,6 +21,7 @@ public class LeaveRequestDTO {
     private LocalDate earnedDate;
     private String fileUpload;
     private Boolean hasClass;
+    private String session;
     public String getEmpId() {
         return empId;
     }
@@ -123,6 +124,14 @@ public class LeaveRequestDTO {
 
     public void setHalfDay(boolean halfDay) {
         isHalfDay = halfDay;
+    }
+
+    public String getSession() {
+        return session;
+    }
+
+    public void setSession(String session) {
+        this.session = session;
     }
 
     public static LeaveRequestDTO fromEntity(LeaveRequest leaveRequest) {
