@@ -111,12 +111,16 @@ public class LeaveRequestService {
         if (isHalfDay && !startDate.equals(endDate)) {
             throw new RuntimeException("Half-day leave can only be applied for a single day.");
         }
+
         if (startDate.equals(endDate)) {
-            return isHalfDay ? 0.5 : 1.0;  // If it's a single day leave, return 0.5 for half-day and 1.0 for full-day.
+             // If it's a single day leave, return 0.5 for half-day and 1.0 for full-day.
+            return isHalfDay ? 0.5 : 1.0;
         }
+
         long totalDays = ChronoUnit.DAYS.between(startDate, endDate) + 1;
-        return totalDays;  // For half-day, return 0.5 of the total days.
+        return isHalfDay ? totalDays * 0.5 : totalDays;  // For half-day, return 0.5 of the total days.
     }
+
 
     public List<Integer> submitLeaveRequest(Integer requestId) {
         LeaveRequest leaveRequest = leaveRequestRepository.findById(requestId)
