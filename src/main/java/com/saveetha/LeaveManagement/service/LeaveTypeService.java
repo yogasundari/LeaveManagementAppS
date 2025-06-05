@@ -55,4 +55,15 @@ public class LeaveTypeService {
         return leaveTypeRepository.save(leaveType);
 
     }
+    public List<LeaveType> getActiveLeaveTypes() {
+        return leaveTypeRepository.findByActiveTrue();
+    }
+    public LeaveType toggleLeaveTypeStatus(Integer id, boolean active) {
+        LeaveType leaveType = leaveTypeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("LeaveType not found with ID: " + id));
+
+        leaveType.setActive(active); // use your Boolean field here
+        return leaveTypeRepository.save(leaveType);
+    }
+
 }

@@ -25,11 +25,17 @@ public class LeaveTypeController {
     }
 
     // All Users Can View Leave Types
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     @GetMapping
     public ResponseEntity<List<LeaveType>> getAllLeaveTypes() {
         return ResponseEntity.ok(leaveTypeService.getAllLeaveTypes());
     }
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
+    @GetMapping("/active")
+    public ResponseEntity<List<LeaveType>> getActiveLeaveTypes() {
+        return ResponseEntity.ok(leaveTypeService.getActiveLeaveTypes());
+    }
+
 
     // All Users Can View a Specific Leave Type
     @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
@@ -54,4 +60,11 @@ public class LeaveTypeController {
         leaveTypeService.deleteLeaveType(id);
         return ResponseEntity.noContent().build();
     }
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PutMapping("/{id}/status")
+    public ResponseEntity<LeaveType> toggleLeaveTypeStatus(@PathVariable Integer id, @RequestParam boolean active) {
+        LeaveType updatedLeaveType = leaveTypeService.toggleLeaveTypeStatus(id, active);
+        return ResponseEntity.ok(updatedLeaveType);
+    }
+
 }

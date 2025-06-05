@@ -58,17 +58,13 @@ public class DepartmentService {
         return departmentRepository.save(existingDepartment);
     }
 
-    @Transactional
-    public Department deactivateDepartment(Long id) {
-        Department department = getDepartmentById(id);
-        department.setActive(false);
-        return departmentRepository.save(department);
+
+    public Department toggleDepartmentStatus(Long id, boolean active) {
+        Department dept = departmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Department not found with ID: " + id));
+
+        dept.setActive(active);
+        return departmentRepository.save(dept);
     }
 
-    @Transactional
-    public Department activateDepartment(Long id) {
-        Department department = getDepartmentById(id);
-        department.setActive(true);
-        return departmentRepository.save(department);
-    }
 }
