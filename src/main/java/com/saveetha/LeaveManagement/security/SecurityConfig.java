@@ -68,6 +68,7 @@ public class SecurityConfig {
 
 
 						.requestMatchers(HttpMethod.GET, "/api/approval-flow-levels/active").permitAll()
+						.requestMatchers(HttpMethod.GET, "/api/approval-flow-levels/all").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.GET, "/api/approval-flow-levels/flow/**").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.POST, "/api/approval-flow-levels/").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.POST, "/api/approval-flow-levels/create").hasAuthority("ADMIN")

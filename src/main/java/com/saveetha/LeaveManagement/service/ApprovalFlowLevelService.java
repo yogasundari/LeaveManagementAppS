@@ -23,6 +23,7 @@ public class ApprovalFlowLevelService {
     @Autowired
     private ApprovalFlowRepository approvalFlowRepository;
 
+
     @Autowired
     private EmployeeRepository employeeRepository;
 
@@ -37,6 +38,13 @@ public class ApprovalFlowLevelService {
                 level.getApprover() != null ? level.getApprover().getEmpId() : null,
                 level.isActive()
         )).collect(Collectors.toList());
+    }
+
+    public List<ApprovalFlowLevelDTO> getAllApprovalFlowLevelDTOs() {
+        List<ApprovalFlowLevel> levels = approvalFlowLevelRepository.findAll();
+        return levels.stream()
+                .map(ApprovalFlowLevelDTO::new)
+                .collect(Collectors.toList());
     }
 
     // Get approval levels by Approval Flow ID

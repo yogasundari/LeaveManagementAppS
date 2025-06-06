@@ -1,5 +1,6 @@
 package com.saveetha.LeaveManagement.dto;
 
+import com.saveetha.LeaveManagement.entity.ApprovalFlowLevel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,14 +8,10 @@ import lombok.Setter;
 @Setter
 public class ApprovalFlowLevelDTO {
 
-    private Integer flowLevelId;  // Add this field
-
+    private Integer flowLevelId;
     private Integer approvalFlowId;
-
     private String approverId;
-
     private Integer sequence;
-
     private boolean active;
 
     public ApprovalFlowLevelDTO() {}
@@ -27,4 +24,12 @@ public class ApprovalFlowLevelDTO {
         this.active = active;
     }
 
+    //  Constructor that accepts entity
+    public ApprovalFlowLevelDTO(ApprovalFlowLevel entity) {
+        this.flowLevelId = entity.getFlowLevelId();
+        this.approvalFlowId = entity.getApprovalFlow().getApprovalFlowId();
+        this.sequence = entity.getSequence();
+        this.approverId = entity.getApprover().getEmpId();  // or getName(), if needed
+        this.active = entity.isActive();
+    }
 }

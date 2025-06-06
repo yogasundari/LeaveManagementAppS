@@ -19,11 +19,20 @@ public class ApprovalFlowLevelController {
     @Autowired
     private ApprovalFlowLevelService approvalFlowLevelService;
 
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/all")
+    public ResponseEntity<List<ApprovalFlowLevelDTO>> getAllApprovalFlowLevels() {
+        return ResponseEntity.ok(approvalFlowLevelService.getAllApprovalFlowLevelDTOs());
+    }
+
+
     // Get all approval flow levels
     @GetMapping("/active")
     public ResponseEntity<List<ApprovalFlowLevelDTO>> getAllActiveApprovalFlowLevels() {
         return ResponseEntity.ok(approvalFlowLevelService.getAllActiveApprovalFlowLevels());
     }
+
+
 
     // Get approval flow levels by Approval Flow ID
     @PreAuthorize("hasAuthority('ADMIN')")
