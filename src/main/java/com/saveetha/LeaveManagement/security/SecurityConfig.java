@@ -85,6 +85,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.PATCH ,"/api/employees/deactivate/**").hasAuthority("ADMIN")
 						.requestMatchers(HttpMethod.POST ,"/api/employees/upload-picture/{empId}/**").authenticated()
 						.requestMatchers(HttpMethod.PUT, "/api/employees/assign-approval-flow").hasAuthority("ADMIN")
+						.requestMatchers(HttpMethod.GET,"/api/employees/search").hasAuthority("ADMIN")
 
 						.requestMatchers(HttpMethod.GET, "/api/notifications/{empId}").authenticated()
 						.requestMatchers(HttpMethod.POST, "/api/leave").permitAll()

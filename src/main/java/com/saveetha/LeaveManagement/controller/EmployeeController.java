@@ -128,4 +128,10 @@ public class EmployeeController {
                 ? ResponseEntity.ok("Employee details updated and approval flow assigned successfully.")
                 : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee or Approval Flow not found.");
     }
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/search")
+    public ResponseEntity<List<Employee>> searchEmployees(@RequestParam String keyword) {
+        return ResponseEntity.ok(employeeService.searchEmployees(keyword));
+    }
+
 }

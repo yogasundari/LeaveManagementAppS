@@ -47,7 +47,7 @@ public class ApprovalFlowController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // ✅ Update approval flow using DTO
+    //  Update approval flow using DTO
     @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ApprovalFlow> updateApprovalFlow(@PathVariable Integer id,

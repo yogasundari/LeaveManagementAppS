@@ -251,4 +251,8 @@ public class EmployeeService {
 
         return false;
     }
+    public List<Employee> searchEmployees(String keyword) {
+        return employeeRepository.searchEmployees(keyword);
+    }
+
 }
