@@ -12,5 +12,4 @@ public class LeaveManagemnetApplication {
 		SpringApplication.run(LeaveManagemnetApplication.class, args);
 		System.out.println("hello yoga");
 	}
-//error
 }
