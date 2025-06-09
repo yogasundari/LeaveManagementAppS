@@ -10,7 +10,6 @@ import java.util.Optional;
 
 public interface LeaveTypeRepository extends JpaRepository<LeaveType, Integer> {
 
-    Optional<LeaveType> findByTypeName(String typeName);
 
     @Query("SELECT lt FROM LeaveType lt WHERE LOWER(lt.typeName) = LOWER(:typeName) AND lt.active = true")
     Optional<LeaveType> findByTypeNameIgnoreCase(@Param("typeName") String typeName);

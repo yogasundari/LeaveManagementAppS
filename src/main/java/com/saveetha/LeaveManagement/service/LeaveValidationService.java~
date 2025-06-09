@@ -418,7 +418,7 @@ public class LeaveValidationService {
                 currentMonth.getEnd()
         );
         if (usedThisMonth >= 2) {
-            throw new LeaveValidationException(
+            throw new RuntimeException(
                     String.format("late limit for %s–%s reached: already used %d of 2",
                             currentMonth.getStart(),
                             currentMonth.getEnd(),

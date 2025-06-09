@@ -2,6 +2,7 @@ package com.saveetha.LeaveManagement.service;
 
 import com.saveetha.LeaveManagement.dto.LeaveHistoryDto;
 import com.saveetha.LeaveManagement.dto.LeaveRequestDTO;
+import com.saveetha.LeaveManagement.dto.LeaveRequestResponseDTO;
 import com.saveetha.LeaveManagement.entity.*;
 import com.saveetha.LeaveManagement.enums.AlterationType;
 import com.saveetha.LeaveManagement.enums.LeaveStatus;
@@ -190,8 +191,11 @@ public class LeaveRequestService {
                 ((java.sql.Timestamp) row [6]).toLocalDateTime()
         )).toList();
     }
-    public List<LeaveRequest> getAllLeaveRequests() {
-        return leaveRequestRepository.findAll();
+    public List<LeaveRequestResponseDTO> getAllLeaveRequests() {
+        List<LeaveRequest> leaveRequests = leaveRequestRepository.findAll();
+        return leaveRequests.stream()
+                .map(LeaveRequestResponseDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
     public LeaveRequest getLeaveRequestById(Integer id) {
@@ -204,4 +208,5 @@ public class LeaveRequestService {
                 .orElseThrow(() -> new RuntimeException("Leave Request not found with ID: " + id));
         leaveRequestRepository.delete(leaveRequest);
     }
+
 }

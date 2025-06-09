@@ -2,6 +2,7 @@ package com.saveetha.LeaveManagement.controller;
 
 import com.saveetha.LeaveManagement.dto.LeaveHistoryDto;
 import com.saveetha.LeaveManagement.dto.LeaveRequestDTO;
+import com.saveetha.LeaveManagement.dto.LeaveRequestResponseDTO;
 import com.saveetha.LeaveManagement.entity.LeaveRequest;
 import com.saveetha.LeaveManagement.security.JwtUtil;
 import com.saveetha.LeaveManagement.service.CloudinaryService;
@@ -11,6 +12,7 @@ import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -71,6 +73,13 @@ public class LeaveRequestController {
     @GetMapping("/leave-history")
     public ResponseEntity<List<LeaveHistoryDto>> getLeaveHistory() {
         return ResponseEntity.ok(leaveRequestService.getLeaveHistoryForCurrentUser());
+    }
+
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/all")
+    public ResponseEntity<List<LeaveRequestResponseDTO>> getAllLeaveRequests() {
+        return ResponseEntity.ok(leaveRequestService.getAllLeaveRequests());
     }
 
 
