@@ -81,6 +81,15 @@ System.out.println(loggedInEmpId);
                     dto.setEndDate(request.getEndDate().toString());
                     dto.setReason(request.getReason());
                     dto.setStatus(approval.getStatus().name());
+                    String leaveType = request.getLeaveType().getTypeName().toUpperCase();
+
+                    if ("ML".equals(leaveType)) {
+                        dto.setFileUpload(request.getFileUpload()); // File path or public URL
+                    }
+
+                    if ("COMP OFF".equals(leaveType)) {
+                        dto.setEarnedDate(request.getEarnedDate());
+                    }
 
                     // Map LeaveAlteration -> LeaveAlterationDto
                     List<LeaveAlterationDto> alterationDtos = request.getAlterations().stream().map(alt -> {

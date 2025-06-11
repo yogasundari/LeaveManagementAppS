@@ -1,5 +1,6 @@
 package com.saveetha.LeaveManagement.dto;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class LeaveRequestSummaryDTO {
@@ -9,6 +10,8 @@ public class LeaveRequestSummaryDTO {
     private String empName;
     private String leaveType;
     private String startDate;
+    private String fileUpload;
+    private LocalDate earnedDate;
     private String endDate;
     private String reason;
     private String status;
@@ -71,6 +74,22 @@ public class LeaveRequestSummaryDTO {
 
     public String getReason() {
         return reason;
+    }
+
+    public String getFileUpload() {
+        return fileUpload;
+    }
+
+    public LocalDate getEarnedDate() {
+        return earnedDate;
+    }
+
+    public void setEarnedDate(LocalDate earnedDate) {
+        this.earnedDate = earnedDate;
+    }
+
+    public void setFileUpload(String fileUpload) {
+        this.fileUpload = fileUpload;
     }
 
     public void setReason(String reason) {
