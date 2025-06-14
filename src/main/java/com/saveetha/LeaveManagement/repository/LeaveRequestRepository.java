@@ -178,5 +178,38 @@ ORDER BY
           """,nativeQuery=true)
     List<Object[]>getLeaveHistoryForEmployee(@Param("empId") String empId);
 
+    @Query("SELECT lr FROM LeaveRequest lr " +
+            "JOIN lr.employee e " +
+            "JOIN lr.leaveType lt " +
+            "WHERE (:empId IS NULL OR e.empId LIKE %:empId%) " +
+            "AND (:email IS NULL OR e.email LIKE %:email%) " +
+            "AND (:typeName IS NULL OR lt.typeName LIKE %:typeName%) " +
+            "AND (:startDate IS NULL OR lr.startDate >= :startDate) " +
+            "AND (:endDate IS NULL OR lr.endDate <= :endDate) " +
+            "AND (:status IS NULL OR lr.status = :status) " +
+            "AND (:reason IS NULL OR lr.reason LIKE %:reason%) " +
+            "ORDER BY lr.startDate DESC")
+    List<LeaveRequest> searchLeaveRequests(
+            @Param("empId") String empId,
+            @Param("email") String email,
+            @Param("typeName") String typeName,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("status") String status,
+            @Param("reason") String reason
+    );
+
+    // General keyword search across multiple fields
+    @Query("SELECT lr FROM LeaveRequest lr " +
+            "JOIN lr.employee e " +
+            "JOIN lr.leaveType lt " +
+            "WHERE (:keyword IS NULL OR " +
+            "e.empId LIKE %:keyword% OR " +
+            "e.email LIKE %:keyword% OR " +
+            "lt.typeName LIKE %:keyword% OR " +
+            "lr.reason LIKE %:keyword% OR " +
+            "CAST(lr.status AS string) LIKE %:keyword%) " +
+            "ORDER BY lr.startDate DESC")
+    List<LeaveRequest> searchByKeyword(@Param("keyword") String keyword);
 }
 

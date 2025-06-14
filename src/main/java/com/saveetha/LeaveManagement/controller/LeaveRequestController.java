@@ -10,13 +10,15 @@ import com.saveetha.LeaveManagement.service.LeaveRequestService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
+import com.saveetha.LeaveManagement.dto.LeaveSearchFilterDTO;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,5 +84,15 @@ public class LeaveRequestController {
         return ResponseEntity.ok(leaveRequestService.getAllLeaveRequests());
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping("/search")
+    public ResponseEntity<List<LeaveRequestResponseDTO>> searchLeaveRequests(@RequestBody LeaveSearchFilterDTO filter) {
+        try {
+            List<LeaveRequestResponseDTO> results = leaveRequestService.searchLeaveRequests(filter);
+            return ResponseEntity.ok(results);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
 }

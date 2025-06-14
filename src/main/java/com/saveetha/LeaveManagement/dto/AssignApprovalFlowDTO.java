@@ -10,8 +10,17 @@ import java.time.LocalDate;
 public class AssignApprovalFlowDTO {
     private String empId;
     private String empName;
-
     private Integer approvalFlowId;
+    private String designation;
+    private Long departmentId;
+    private String staffType;
+    private String role; // Added role field
+    private String profilePicture;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate joiningDate;
+
+    // Getters and Setters
     public String getDesignation() {
         return designation;
     }
@@ -36,19 +45,21 @@ public class AssignApprovalFlowDTO {
         this.staffType = staffType;
     }
 
-    public LocalDate getJoiningDate() {
+    public String getRole() {
+        return role;
+    }
 
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public LocalDate getJoiningDate() {
         return joiningDate;
     }
 
     public void setJoiningDate(LocalDate joiningDate) {
         this.joiningDate = joiningDate;
     }
-
-    private String designation;
-    private Long departmentId;
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate joiningDate;
 
     public String getEmpName() {
         return empName;
@@ -57,9 +68,6 @@ public class AssignApprovalFlowDTO {
     public void setEmpName(String empName) {
         this.empName = empName;
     }
-
-    private String profilePicture;
-    private String staffType;
 
     public String getProfilePicture() {
         return profilePicture;

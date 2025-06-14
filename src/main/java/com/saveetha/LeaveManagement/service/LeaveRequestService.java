@@ -3,6 +3,7 @@ package com.saveetha.LeaveManagement.service;
 import com.saveetha.LeaveManagement.dto.LeaveHistoryDto;
 import com.saveetha.LeaveManagement.dto.LeaveRequestDTO;
 import com.saveetha.LeaveManagement.dto.LeaveRequestResponseDTO;
+import com.saveetha.LeaveManagement.dto.LeaveSearchFilterDTO;
 import com.saveetha.LeaveManagement.entity.*;
 import com.saveetha.LeaveManagement.enums.AlterationType;
 import com.saveetha.LeaveManagement.enums.LeaveStatus;
@@ -62,6 +63,9 @@ public class LeaveRequestService {
             case "vacation":
                 leaveValidationService.validatevacation(leaveRequestdto);
                 break;
+            case "rh":
+                leaveValidationService.validateReligiousHolidayLeave(leaveRequestdto);
+                break;
             case "late":
                 leaveValidationService.validatelate(leaveRequestdto);
                 break;
@@ -94,7 +98,7 @@ public class LeaveRequestService {
             leaveRequest.setSession(null); // Not applicable
         } // This will pass a boolean value (true or false)
 
-        double numberOfDays =calculateLeaveDays(leaveRequestdto.getStartDate(), leaveRequestdto.getEndDate(), leaveRequestdto.isHalfDay());
+        double numberOfDays = calculateLeaveDays(leaveRequestdto.getStartDate(), leaveRequestdto.getEndDate(), leaveRequestdto.isHalfDay());
         leaveRequest.setNumberOfDays(numberOfDays);
 
         if (leaveRequestdto.getHasClass() != null && leaveRequestdto.getHasClass()) {
@@ -108,13 +112,14 @@ public class LeaveRequestService {
         }
 
     }
+
     private double calculateLeaveDays(LocalDate startDate, LocalDate endDate, boolean isHalfDay) {
         if (isHalfDay && !startDate.equals(endDate)) {
             throw new RuntimeException("Half-day leave can only be applied for a single day.");
         }
 
         if (startDate.equals(endDate)) {
-             // If it's a single day leave, return 0.5 for half-day and 1.0 for full-day.
+            // If it's a single day leave, return 0.5 for half-day and 1.0 for full-day.
             return isHalfDay ? 0.5 : 1.0;
         }
 
@@ -149,8 +154,8 @@ public class LeaveRequestService {
         // If no alteration or all alterations are valid, proceed
         leaveRequest.setStatus(LeaveStatus.PENDING);
         leaveRequestRepository.save(leaveRequest);
-        List<LeaveApproval> savedApprovals= leaveApprovalService.initiateApprovalFlow(requestId);
-        return  savedApprovals.stream()
+        List<LeaveApproval> savedApprovals = leaveApprovalService.initiateApprovalFlow(requestId);
+        return savedApprovals.stream()
                 .map(LeaveApproval::getApprovalId)
                 .collect(Collectors.toList());
     }
@@ -169,28 +174,30 @@ public class LeaveRequestService {
         leaveRequestRepository.save(leaveRequest);
     }
 
-    private String getCurrentUserEmpId(){
-        Object principal= SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if(principal instanceof UserDetails userDetails) {
+    private String getCurrentUserEmpId() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails userDetails) {
             return userDetails.getUsername();
-        }else{
+        } else {
             throw new RuntimeException("unable to extract user details from security context");
         }
     }
-    public List<LeaveHistoryDto> getLeaveHistoryForCurrentUser(){
-        String empId =getCurrentUserEmpId();
-        List<Object[]> rawData =leaveRequestRepository.getLeaveHistoryForEmployee(empId);
 
-        return rawData.stream().map(row-> new LeaveHistoryDto(
+    public List<LeaveHistoryDto> getLeaveHistoryForCurrentUser() {
+        String empId = getCurrentUserEmpId();
+        List<Object[]> rawData = leaveRequestRepository.getLeaveHistoryForEmployee(empId);
+
+        return rawData.stream().map(row -> new LeaveHistoryDto(
                 (Integer) row[0],
                 (String) row[1],
                 ((java.sql.Date) row[2]).toLocalDate(),
                 ((java.sql.Date) row[3]).toLocalDate(),
                 (String) row[4],
                 (String) row[5],
-                ((java.sql.Timestamp) row [6]).toLocalDateTime()
+                ((java.sql.Timestamp) row[6]).toLocalDateTime()
         )).toList();
     }
+
     public List<LeaveRequestResponseDTO> getAllLeaveRequests() {
         List<LeaveRequest> leaveRequests = leaveRequestRepository.findAll();
         return leaveRequests.stream()
@@ -209,4 +216,42 @@ public class LeaveRequestService {
         leaveRequestRepository.delete(leaveRequest);
     }
 
+    public List<LeaveRequestResponseDTO> searchLeaveRequests(LeaveSearchFilterDTO filterDTO) {
+        List<LeaveRequest> leaveRequests;
+
+        // If only keyword is provided, use general keyword search
+        if (isOnlyKeywordSearch(filterDTO)) {
+            leaveRequests = leaveRequestRepository.searchByKeyword(filterDTO.getKeyword());
+        } else {
+            // Use detailed search with multiple criteria
+            leaveRequests = leaveRequestRepository.searchLeaveRequests(
+                    filterDTO.getEmpId(),
+                    filterDTO.getEmail(),
+                    filterDTO.getTypeName(),
+                    filterDTO.getStartDate(),
+                    filterDTO.getEndDate(),
+                    filterDTO.getStatus(),
+                    filterDTO.getReason()
+            );
+        }
+
+        // Convert entities to DTOs
+        return leaveRequests.stream()
+                .map(LeaveRequestResponseDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    // Helper method to check if only keyword search is being performed
+    private boolean isOnlyKeywordSearch(LeaveSearchFilterDTO filterDTO) {
+        return filterDTO.getKeyword() != null && !filterDTO.getKeyword().trim().isEmpty() &&
+                filterDTO.getEmpId() == null &&
+                filterDTO.getEmail() == null &&
+                filterDTO.getTypeName() == null &&
+                filterDTO.getStartDate() == null &&
+                filterDTO.getEndDate() == null &&
+                filterDTO.getStatus() == null &&
+                filterDTO.getReason() == null;
+    }
 }
+
+

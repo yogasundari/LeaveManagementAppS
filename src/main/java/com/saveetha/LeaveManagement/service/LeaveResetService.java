@@ -24,7 +24,6 @@ public class LeaveResetService {
 
     @Autowired
     private EmployeeLeaveBalanceRepository balanceRepository;
-
     public void resetAllEmployeeLeaveBalances(String newAcademicYear) {
         List<Employee> activeEmployees = employeeRepository.findByactiveTrue(); // Only active employees
         List<LeaveType> leaveTypes = leaveTypeRepository.findAll();
@@ -32,7 +31,14 @@ public class LeaveResetService {
         for (Employee employee : activeEmployees) {
             for (LeaveType leaveType : leaveTypes) {
 
-                double maxLeave = leaveType.getMaxAllowedPerYear();
+                // Safely handle null maxAllowedPerYear
+                Integer maxLeaveObj = leaveType.getMaxAllowedPerYear();
+                if (maxLeaveObj == null) {
+                    System.out.println("Skipping leave type: " + leaveType.getTypeName() + " as maxAllowedPerYear is null.");
+                    continue; // Skip this leave type
+                }
+
+                double maxLeave = maxLeaveObj.doubleValue();
 
                 // Either update existing balance or create new
                 EmployeeLeaveBalance balance = balanceRepository
@@ -56,7 +62,5 @@ public class LeaveResetService {
 
         System.out.println("----------************---------Leave balances reset for academic year:-------------------******** " + newAcademicYear);
     }
-
-
 
 }

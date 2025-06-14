@@ -365,10 +365,45 @@ public class LeaveValidationService {
 
 
     public void validatelop(LeaveRequestDTO leaveRequestDTO){
+        // Step 1: Retrieve LOP leave type
+        LeaveType lopType = leaveTypeRepository.findByTypeNameIgnoreCase("lop")
+                .orElseThrow(() -> new RuntimeException("LOP leave type not found."));
+
+        Integer lopTypeId = lopType.getLeaveTypeId();
+
+        // Step 2: Check for overlapping leave requests
+        List<LeaveRequest> overlappingRequests = leaveRequestRepository.findOverlappingLeaveRequestsByTypeId(
+                leaveRequestDTO.getEmpId(),
+                lopTypeId,
+                Arrays.asList(LeaveStatus.PENDING, LeaveStatus.APPROVED, LeaveStatus.DRAFT),
+                leaveRequestDTO.getStartDate(),
+                leaveRequestDTO.getEndDate()
+        );
+
+        if (!overlappingRequests.isEmpty()) {
+            throw new LeaveValidationException("Overlapping LOP leave request exists for the selected dates.");
+        }
 
     }
     public void validatevacation(LeaveRequestDTO leaveRequestDTO){
+// Step 1: Retrieve Vacation leave type
+        LeaveType vacationType = leaveTypeRepository.findByTypeNameIgnoreCase("vacation")
+                .orElseThrow(() -> new RuntimeException("Vacation leave type not found."));
 
+        Integer vacationTypeId = vacationType.getLeaveTypeId();
+
+        // Step 2: Check for overlapping vacation leave
+        List<LeaveRequest> overlappingRequests = leaveRequestRepository.findOverlappingLeaveRequestsByTypeId(
+                leaveRequestDTO.getEmpId(),
+                vacationTypeId,
+                Arrays.asList(LeaveStatus.PENDING, LeaveStatus.APPROVED, LeaveStatus.DRAFT),
+                leaveRequestDTO.getStartDate(),
+                leaveRequestDTO.getEndDate()
+        );
+
+        if (!overlappingRequests.isEmpty()) {
+            throw new LeaveValidationException("Overlapping Vacation leave request exists for the selected dates.");
+        }
     }
     public void validatelate(LeaveRequestDTO leaveRequestDTO){
 
@@ -427,4 +462,43 @@ public class LeaveValidationService {
         }
 
     }
+    public void validateReligiousHolidayLeave(LeaveRequestDTO dto) {
+        // Step 1: Get Employee and RH LeaveType
+        Employee employee = employeeRepository.findByEmpId(dto.getEmpId())
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        LeaveType rhLeaveType = leaveTypeRepository.findByTypeNameIgnoreCase("rh")
+                .orElseThrow(() -> new LeaveValidationException("Religious Holiday leave type not found"));
+
+        // Step 2: Check RH leave balance
+        EmployeeLeaveBalance balance = employeeLeaveBalanceRepository
+                .findByEmployeeAndLeaveType(employee, rhLeaveType)
+                .orElseThrow(() -> new LeaveValidationException("Religious Holiday leave balance not found"));
+
+        if (balance.getBalanceLeave() <= 0) {
+            throw new LeaveValidationException("You have already used your Religious Holiday leave for this year.");
+        }
+
+        // Step 3: RH can only be taken for 1 day
+        long requestedDays = ChronoUnit.DAYS.between(dto.getStartDate(), dto.getEndDate()) + 1;
+        if (requestedDays != 1) {
+            throw new LeaveValidationException("Religious Holiday leave must be exactly 1 day.");
+        }
+
+        // Step 4: Check overlapping RH leave requests (Pending or Approved)
+        List<LeaveRequest> overlappingRequests = leaveRequestRepository.findOverlappingLeaveRequests(
+                dto.getEmpId(),
+                "rh", // assuming RH is stored as 'rh'
+                Arrays.asList(LeaveStatus.PENDING, LeaveStatus.APPROVED),
+                dto.getStartDate(),
+                dto.getEndDate()
+        );
+
+        if (!overlappingRequests.isEmpty()) {
+            throw new LeaveValidationException("You already have a Religious Holiday leave request on this date.");
+        }
+
+    }
+
+
 }

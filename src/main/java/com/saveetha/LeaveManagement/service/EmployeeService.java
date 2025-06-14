@@ -7,6 +7,7 @@ import com.saveetha.LeaveManagement.entity.ApprovalFlow;
 import com.saveetha.LeaveManagement.entity.Department;
 import com.saveetha.LeaveManagement.entity.Employee;
 import com.saveetha.LeaveManagement.entity.LeaveType;
+import com.saveetha.LeaveManagement.enums.Role;
 import com.saveetha.LeaveManagement.enums.StaffType;
 import com.saveetha.LeaveManagement.repository.ApprovalFlowRepository;
 import com.saveetha.LeaveManagement.repository.DepartmentRepository;
@@ -229,6 +230,17 @@ public class EmployeeService {
                     employee.setStaffType(staffType);
                 } catch (IllegalArgumentException e) {
                     throw new RuntimeException("Invalid staff type provided");
+                }
+            }
+
+            // Update role
+            if (dto.getRole() != null) {
+                try {
+                    // Assuming you have a Role enum like StaffType
+                    Role role = Role.valueOf(dto.getRole().toUpperCase());
+                    employee.setRole(role);
+                } catch (IllegalArgumentException e) {
+                    throw new RuntimeException("Invalid role provided");
                 }
             }
 
