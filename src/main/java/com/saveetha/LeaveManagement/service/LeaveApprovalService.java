@@ -33,7 +33,7 @@ public class LeaveApprovalService {
         Employee employee = leaveRequest.getEmployee();
         Integer approvalFlowId = employee.getApprovalFlow().getApprovalFlowId();
 
-        // 👇 Get the sequence of approvers for this flow
+        //  Get the sequence of approvers for this flow
         List<ApprovalFlowLevel> flowLevels = approvalFlowLevelRepository
                 .findByApprovalFlow_ApprovalFlowIdOrderBySequenceAsc(approvalFlowId);
         System.out.println("Initiating approval flow for Leave Request ID: " + leaveRequestId);

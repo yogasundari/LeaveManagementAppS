@@ -54,7 +54,7 @@ public class EmployeeService {
             Employee employee = optionalEmployee.get();
 
 
-            // ✅ Update fields only if they are not null
+            //  Update fields only if they are not null
             if (employeeUpdateDTO.getEmpName() != null) {
                 employee.setEmpName(employeeUpdateDTO.getEmpName());
             }
@@ -196,11 +196,11 @@ public class EmployeeService {
 
         employeeRepository.save(employee);
 
-        // ✅ Fetch leave types and determine academic year
+        //  Fetch leave types and determine academic year
         List<LeaveType> leaveTypes = leaveTypeRepository.findAll();
         String academicYear = determineAcademicYear(dto.getJoiningDate());
 
-        // ✅ Initialize leave balance
+        // Initialize leave balance
         initializeLeaveBalanceService.initializeLeaveBalance(employee, leaveTypes, academicYear);
 
         return employee;

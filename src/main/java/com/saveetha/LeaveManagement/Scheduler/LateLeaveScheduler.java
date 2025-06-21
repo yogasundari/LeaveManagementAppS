@@ -35,10 +35,7 @@ public class LateLeaveScheduler {
         this.lrRepo        = lrRepo;
     }
 
-    /**
-     * Fires at midnight on the 22nd, 23rd, 24th, and 25th of every month.
-     * But only actually runs the deduction if today matches an academic-month end.
-     */
+
     @Scheduled(cron = "0 0 0 22,23,24,25 * *")
     public void adjustMonthlyPermissionBalances() {
         LocalDate today = LocalDate.now();

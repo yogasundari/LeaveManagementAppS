@@ -25,7 +25,7 @@ public class PasswordResetController {
             return ResponseEntity.badRequest().body("Email not found");
         }
 
-        // ✅ Only return the plain token string
+        //  Only return the plain token string
         String token = tokenOpt.get();
 
         return ResponseEntity.ok(new TokenResponse(token, "Use this token to reset your password."));

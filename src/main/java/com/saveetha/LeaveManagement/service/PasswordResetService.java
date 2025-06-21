@@ -17,7 +17,7 @@ public class PasswordResetService {
     private final EmployeeRepository employeeRepository;
     private final PasswordResetTokenRepository tokenRepository;
 
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(); // ✅ Add encoder
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(); //  Add encoder
 
     public PasswordResetService(EmployeeRepository employeeRepository, PasswordResetTokenRepository tokenRepository) {
         this.employeeRepository = employeeRepository;
@@ -34,7 +34,7 @@ public class PasswordResetService {
 
         // Check if token already exists for this employee
         Optional<PasswordResetToken> existingTokenOpt = tokenRepository.findByEmployee(employee);
-        existingTokenOpt.ifPresent(tokenRepository::delete); // ✅ Delete existing token
+        existingTokenOpt.ifPresent(tokenRepository::delete); //  Delete existing token
 
         // Generate new token
         String token = UUID.randomUUID().toString();
@@ -77,7 +77,7 @@ public class PasswordResetService {
         }
 
         Employee employee = resetToken.getEmployee();
-        // ✅ Encode password before saving
+        //  Encode password before saving
         employee.setPassword(passwordEncoder.encode(newPassword));
 
         employeeRepository.save(employee);

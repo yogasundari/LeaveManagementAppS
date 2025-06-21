@@ -101,7 +101,7 @@ public class ApprovalFlowLevelService {
 
         ApprovalFlowLevel updated = approvalFlowLevelRepository.save(existing);
 
-        return ApprovalFlowLevelMapper.toDTO(updated);  // 👍 Mapper used here
+        return ApprovalFlowLevelMapper.toDTO(updated);  // Mapper used here
     }
 
 
